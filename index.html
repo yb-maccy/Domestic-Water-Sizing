@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Riser Diagram Sizer</title>
+    <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --card-bg: #252538;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --cw-color: #60a5fa;
+            --hw-color: #f87171;
+            --hwr-color: #f59e0b;
+            --org-color: #4b5563;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0 0 5px 0;
+            color: var(--accent);
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1250px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Controls Panel */
+        .controls {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .system-select {
+            background: #111827;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .system-select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-hwr {
+            background-color: #d97706;
+        }
+        .btn-hwr:hover {
+            background-color: #b45309;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .node-settings {
+            display: flex;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            min-height: 72px; 
+            min-width: 500px;
+        }
+
+        .settings-meta {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+            border-left: 1px solid var(--border);
+            padding-left: 15px;
+            width: 150px;
+            visibility: visible; 
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .node-settings label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .node-settings input {
+            width: 70px;
+            background: #111827;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* View toggles box */
+        .view-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Designer Workspace */
+        .workspace {
+            position: relative;
+            height: 600px;
+            overflow: auto;
+            background-color: #111827;
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 0),
+                radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 0);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .canvas {
+            position: absolute;
+            width: 3000px;
+            height: 3000px;
+            top: 0;
+            left: 0;
+        }
+
+        /* SVG Overlays for pipes */
+        svg.pipe-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Node Styling */
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #2563eb;
+            border: 3px solid #60a5fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+            color: white;
+            cursor: pointer;
+            z-index: 10; /* Lower than label overlays so boxes are always on top */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-align: center;
+        }
+
+        .node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+        }
+
+        .node.selected {
+            background: #10b981;
+            border-color: #34d399;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.8);
+        }
+
+        .node.root-node {
+            background: #8b5cf6;
+            border-color: #a78bfa;
+        }
+
+        .node.org-node {
+            background: var(--org-color) !important;
+            border-color: #9ca3af !important;
+        }
+
+        /* Floating Node Controls */
+        .node-builder-arrows {
+            position: absolute;
+            display: none;
+            grid-template-columns: repeat(3, 35px);
+            grid-template-rows: repeat(3, 35px);
+            gap: 5px;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .arrow-btn {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            font-size: 16px;
+        }
+
+        .arrow-btn:hover {
+            background: #059669;
+        }
+
+        /* Legend & Info panel */
+        .legend {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-circle {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        /* Pipe flow labels (HTML overlay container) */
+        .pipe-label-wrapper {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 20; /* Renders completely above nodes */
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pipe-label {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+
+        .pipe-label .cw { color: var(--cw-color); }
+        .pipe-label .hw { color: var(--hw-color); }
+        .pipe-label .hwr { color: var(--hwr-color); font-weight: bold; }
+        .pipe-label .flow-demand { color: var(--text-muted); font-weight: bold;}
+        .pipe-label .override-tag { color: #f59e0b; font-size: 9px; font-weight: bold;}
+
+        /* Flow directional visual indicators outside the label card */
+        .flow-indicator {
+            position: absolute;
+            color: #10b981;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 0 0 4px rgba(16, 185, 129, 0.8);
+        }
+
+        .flow-indicator.hwr-indicator {
+            color: var(--hwr-color);
+            text-shadow: 0 0 4px rgba(245, 158, 11, 0.8);
+        }
+
+        /* Toast Alert style */
+        .mode-banner {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.95);
+            color: #111827;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+
+        /* HWR Node Overlay label (moved outside of node tree to overlay context) */
+        .hwr-node-label {
+            position: absolute;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--hwr-color);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+            z-index: 20; /* High z-index to stay above other nodes */
+            text-align: left;
+            line-height: 1.3;
+            pointer-events: none;
+        }
+        .hwr-node-label b {
+            color: var(--hwr-color);
+            font-size: 11px;
+        }
+
+        /* PRINTING STYLESheet Override */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            header, .controls, .legend, .node-builder-arrows, .mode-banner {
+                display: none !important;
+            }
+            .container {
+                border: none !important;
+                box-shadow: none !important;
+                background: white !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .workspace {
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+            .canvas {
+                /* Dynamically handled in JS, but resets defaults */
+                background: white !important;
+            }
+            .node {
+                box-shadow: none !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .pipe-label {
+                background: white !important;
+                color: black !important;
+                border: 1px solid #000 !important;
+            }
+            .hwr-node-label {
+                background: white !important;
+                color: black !important;
+                border: 1.5px solid #d97706 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Interactive Water Riser Diagram Designer</h1>
+        <p>Build, track domestic loads, and design custom Hot Water Return (HWR) paths.</p>
+    </header>
+
+    <div class="container">
+        <!-- Control Toolbar -->
+        <div class="controls">
+            <div class="control-row" style="margin-bottom: 10px;">
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-danger" onclick="resetCanvas()">Reset All</button>
+                    <button class="btn btn-hwr" onclick="toggleHwrMode()" id="hwrModeBtn">Design HWR Path</button>
+                    <button class="btn btn-danger" style="background-color: #78350f;" onclick="resetHwrOnly()">Reset HWR Only</button>
+                    <button class="btn btn-success" onclick="printDiagram()">Print / Save PDF</button>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="systemType" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">System Curve:</label>
+                        <select id="systemType" class="system-select" onchange="recalculateAndRender()">
+                            <option value="tank">Flush Tank Primary</option>
+                            <option value="valve">Flush Valve Primary</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="node-settings" id="nodeSettings" style="visibility: hidden;">
+                    <div class="settings-meta">
+                        <span id="selectedNodeLabel" style="font-weight: bold; color: #34d399;">Node 1</span>
+                        <label class="checkbox-container" id="orgCheckboxContainer">
+                            <input type="checkbox" id="isOrgNode" onchange="toggleOrgNode()"> Org Node (No flow)
+                        </label>
+                        <button class="btn" id="insertNodeBtn" style="padding: 4px 8px; font-size: 11px; background: #4f46e5;" onclick="insertNodeBeforeSelected()">Insert Node Before</button>
+                    </div>
+                    
+                    <!-- CW inputs Grouped Vertically -->
+                    <div class="settings-group" id="cwInputsGroup">
+                        <div class="input-row">
+                            <label for="cwWfuInput" style="color: var(--cw-color);">CW WFU:</label>
+                            <input type="number" id="cwWfuInput" min="0" step="0.5" value="0" oninput="updateNodeParams()">
+                        </div>
+                        <div class="input-row">
+                            <label for="cwGpmOverrideInput" style="color: var(--cw-color);">CW GPM Ovr:</label>
+                            <input type="number" id="cwGpmOverrideInput" min="0" step="0.5" value="0" placeholder="Off" oninput="updateNodeParams()">
+                        </div>
+                    </div>
+
+                    <!-- HW inputs Grouped Vertically -->
+                    <div class="settings-group" id="hwInputsGroup">
+                        <div class="input-row">
+                            <label for="hwWfuInput" style="color: var(--hw-color);">HW WFU:</label>
+                            <input type="number" id="hwWfuInput" min="0" step="0.5" value="0" oninput="updateNodeParams()">
+                        </div>
+                        <div class="input-row">
+                            <label for="hwGpmOverrideInput" style="color: var(--hw-color);">HW GPM Ovr:</label>
+                            <input type="number" id="hwGpmOverrideInput" min="0" step="0.5" value="0" placeholder="Off" oninput="updateNodeParams()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Toggles Row -->
+            <div class="view-toggles">
+                <label class="toggle-item">
+                    <input type="checkbox" id="showNonHwrNodes" checked onchange="recalculateAndRender()"> Show Non-HWR Nodes
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="showSupplyPipes" checked onchange="recalculateAndRender()"> Show Water Supply Pipes
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="showSupplyBoxes" checked onchange="recalculateAndRender()"> Show Supply Pipe Boxes
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="showHwrInfo" checked onchange="recalculateAndRender()"> Show Hot Water Return
+                </label>
+            </div>
+        </div>
+
+        <!-- Designer Workspace -->
+        <div class="workspace" id="workspace">
+            <div class="mode-banner" id="modeBanner">HWR ROUTING MODE: Click nodes in sequence to link return path</div>
+            <div class="canvas" id="canvas">
+                <!-- SVG layer for pipelines -->
+                <svg class="pipe-layer" id="svgLayer">
+                    <defs>
+                        <!-- Arrow markers for water flow direction -->
+                        <marker id="arrow-cw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+                        </marker>
+                        <marker id="arrow-hw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#f87171" />
+                        </marker>
+                    </defs>
+                </svg>
+
+                <!-- Floating controls for selected node -->
+                <div class="node-builder-arrows" id="arrowControls">
+                    <button class="arrow-btn" style="grid-column: 2; grid-row: 1;" onclick="addNode('up')">↑</button>
+                    <button class="arrow-btn" style="grid-column: 1; grid-row: 2;" onclick="addNode('left')">←</button>
+                    <button class="arrow-btn" style="grid-column: 3; grid-row: 2;" onclick="addNode('right')">→</button>
+                    <button class="arrow-btn" style="grid-column: 2; grid-row: 3;" onclick="addNode('down')">↓</button>
+                </div>
+
+                <!-- Nodes Container rendered BELOW Pipe Labels overlay for accurate overlapping -->
+                <div id="nodesContainer"></div>
+
+                <!-- HTML overlay containers for labels and boxes (rendered last for highest stacking) -->
+                <div id="pipeLabelsContainer"></div>
+            </div>
+        </div>
+
+        <!-- Info/Legend Panel -->
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background: #8b5cf6;"></span>
+                <span>Inlet (Always Org)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-circle" style="background: var(--org-color); border: 2px solid #9ca3af;"></span>
+                <span>Organizational Node</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: var(--cw-color);"></span>
+                <span>Cold Water (CW) Flow</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: var(--hw-color);"></span>
+                <span>Hot Water (HW) Flow</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: var(--hwr-color); height: 2px; border-top: 2px dashed var(--hwr-color);"></span>
+                <span>Hot Water Return (HWR) [0.5 GPM per node]</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sizingTable = [
+            { maxGpm: 1.5, size: '3/8"' },
+            { maxGpm: 5.0, size: '1/2"' },
+            { maxGpm: 10.0, size: '3/4"' },
+            { maxGpm: 22.0, size: '1"' },
+            { maxGpm: 39.0, size: '1-1/4"' },
+            { maxGpm: 55.0, size: '1-1/2"' },
+            { maxGpm: 110.0, size: '2"' },
+            { maxGpm: 175.0, size: '2-1/2"' },
+            { maxGpm: 280.0, size: '3"' },
+            { maxGpm: 600.0, size: '4"' }
+        ];
+
+        const hwrSizingTable = [
+            { maxGpm: 5.0, size: '1/2"' },
+            { maxGpm: 10.0, size: '3/4"' },
+            { maxGpm: 22.0, size: '1"' },
+            { maxGpm: 39.0, size: '1-1/4"' },
+            { maxGpm: 55.0, size: '1-1/2"' },
+            { maxGpm: 110.0, size: '2"' },
+            { maxGpm: 175.0, size: '2-1/2"' },
+            { maxGpm: 280.0, size: '3"' },
+            { maxGpm: 600.0, size: '4"' }
+        ];
+
+        function getPipeSize(gpm) {
+            if (gpm <= 0) return 'N/A';
+            for (let bracket of sizingTable) {
+                if (gpm <= bracket.maxGpm) return bracket.size;
+            }
+            return '4"+';
+        }
+
+        function getHwrPipeSize(gpm) {
+            if (gpm <= 0) return 'N/A';
+            for (let bracket of hwrSizingTable) {
+                if (gpm <= bracket.maxGpm) return bracket.size;
+            }
+            return '4"+';
+        }
+
+        function wfuToGpm(wfu) {
+            if (wfu <= 0) return 0;
+            const system = document.getElementById('systemType').value;
+
+            if (system === 'tank') {
+                if (wfu <= 1) return 3.0;
+                if (wfu <= 4) return 3.0 + (wfu - 1) * (8.0 - 3.0) / 3.0;
+                if (wfu <= 9) return 8.0 + (wfu - 4) * (15.0 - 8.0) / 5.0;
+                if (wfu <= 20) return 15.0 + (wfu - 9) * (25.0 - 15.0) / 11.0;
+                if (wfu <= 45) return 25.0 + (wfu - 20) * (40.0 - 25.0) / 25.0;
+                if (wfu <= 75) return 40.0 + (wfu - 45) * (55.0 - 40.0) / 30.0;
+                if (wfu <= 180) return 55.0 + (wfu - 75) * (80.0 - 55.0) / 105.0;
+                if (wfu <= 350) return 80.0 + (wfu - 180) * (110.0 - 80.0) / 170.0;
+                if (wfu <= 600) return 110.0 + (wfu - 350) * (150.0 - 110.0) / 250.0;
+                if (wfu <= 1200) return 150.0 + (wfu - 600) * (250.0 - 150.0) / 600.0;
+                return 250.0 + (wfu - 1200) * 0.15;
+            } else {
+                if (wfu <= 5) return 15.0;
+                if (wfu <= 10) return 15.0 + (wfu - 5) * (27.0 - 15.0) / 5.0;
+                if (wfu <= 20) return 27.0 + (wfu - 10) * (35.0 - 27.0) / 10.0;
+                if (wfu <= 45) return 35.0 + (wfu - 20) * (53.0 - 35.0) / 25.0;
+                if (wfu <= 75) return 53.0 + (wfu - 45) * (65.0 - 53.0) / 30.0;
+                if (wfu <= 180) return 65.0 + (wfu - 75) * (94.0 - 65.0) / 105.0;
+                if (wfu <= 350) return 94.0 + (wfu - 180) * (128.0 - 94.0) / 170.0;
+                if (wfu <= 600) return 128.0 + (wfu - 350) * (170.0 - 128.0) / 250.0;
+                if (wfu <= 1200) return 170.0 + (wfu - 600) * (275.0 - 170.0) / 600.0;
+                return 275.0 + (wfu - 1200) * 0.15;
+            }
+        }
+
+        // State variables
+        let nodes = [];
+        let selectedNodeId = null;
+        let nodeCounter = 0;
+        const gridSpacing = 150; 
+
+        // HWR System state
+        let isHwrMode = false;
+        let hwrPath = []; 
+
+        const canvas = document.getElementById('canvas');
+        const workspace = document.getElementById('workspace');
+        const nodesContainer = document.getElementById('nodesContainer');
+        const pipeLabelsContainer = document.getElementById('pipeLabelsContainer');
+        const svgLayer = document.getElementById('svgLayer');
+        const arrowControls = document.getElementById('arrowControls');
+        const nodeSettings = document.getElementById('nodeSettings');
+        const hwrModeBtn = document.getElementById('hwrModeBtn');
+        const modeBanner = document.getElementById('modeBanner');
+
+        function init() {
+            resetCanvas();
+        }
+
+        function resetCanvas() {
+            nodes = [];
+            hwrPath = [];
+            isHwrMode = false;
+            nodeCounter = 0;
+            selectedNodeId = null;
+            nodesContainer.innerHTML = '';
+            pipeLabelsContainer.innerHTML = '';
+            hwrModeBtn.style.background = '';
+            hwrModeBtn.innerText = 'Design HWR Path';
+            modeBanner.style.display = 'none';
+            svgLayer.querySelectorAll('line').forEach(line => line.remove());
+            arrowControls.style.display = 'none';
+            nodeSettings.style.visibility = 'hidden';
+
+            // Reset view toggles to standard defaults
+            document.getElementById('showNonHwrNodes').checked = true;
+            document.getElementById('showSupplyPipes').checked = true;
+            document.getElementById('showSupplyBoxes').checked = true;
+            document.getElementById('showHwrInfo').checked = true;
+
+            // Create initial root node (Inlet)
+            createNode(1500, 1500, null, 0, 0, 0, 0, true); 
+            recalculateAndRender();
+
+            // Center scroll container
+            setTimeout(() => {
+                workspace.scrollLeft = 1500 - workspace.clientWidth / 2 + 25;
+                workspace.scrollTop = 1500 - workspace.clientHeight / 2 + 25;
+            }, 50);
+        }
+
+        function resetHwrOnly() {
+            hwrPath = [];
+            isHwrMode = false;
+            hwrModeBtn.style.background = '';
+            hwrModeBtn.innerText = 'Design HWR Path';
+            modeBanner.style.display = 'none';
+            recalculateAndRender();
+        }
+
+        function toggleHwrMode() {
+            isHwrMode = !isHwrMode;
+            if (isHwrMode) {
+                hwrModeBtn.style.background = '#059669';
+                hwrModeBtn.innerText = 'Exit HWR Mode';
+                modeBanner.style.display = 'block';
+                deselectActiveNode();
+            } else {
+                hwrModeBtn.style.background = '';
+                hwrModeBtn.innerText = 'Design HWR Path';
+                modeBanner.style.display = 'none';
+            }
+            recalculateAndRender();
+        }
+
+        function createNode(x, y, parentId, cwWfu = 0, hwWfu = 0, cwGpmOverride = 0, hwGpmOverride = 0, isOrg = false) {
+            const id = ++nodeCounter;
+            const node = {
+                id: id,
+                x: x,
+                y: y,
+                parentId: parentId, 
+                cwWfu: cwWfu,
+                hwWfu: hwWfu,
+                cwGpmOverride: cwGpmOverride,
+                hwGpmOverride: hwGpmOverride,
+                isOrg: isOrg,
+                cumulativeCwWfu: 0,
+                cumulativeHwWfu: 0,
+                computedCwGpm: 0,
+                computedHwGpm: 0,
+                cwOverridden: false,
+                hwOverridden: false
+            };
+            nodes.push(node);
+            return node;
+        }
+
+        function selectNode(id) {
+            if (isHwrMode) {
+                const node = nodes.find(n => n.id === id);
+                const existingIdx = hwrPath.indexOf(id);
+                if (existingIdx !== -1) {
+                    hwrPath.splice(existingIdx, 1);
+                } else {
+                    hwrPath.push(id);
+                }
+                recalculateAndRender();
+                return;
+            }
+
+            if (selectedNodeId === id) {
+                deselectActiveNode();
+                return;
+            }
+
+            selectedNodeId = id;
+            
+            document.querySelectorAll('.node').forEach(el => {
+                if (parseInt(el.dataset.id) === id) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+
+            const node = nodes.find(n => n.id === id);
+            if (!node) return;
+
+            nodeSettings.style.visibility = 'visible';
+            
+            if (node.parentId === null) {
+                document.getElementById('selectedNodeLabel').innerText = `Inlet (Org Only)`;
+                document.getElementById('orgCheckboxContainer').style.display = 'none';
+                document.getElementById('insertNodeBtn').style.display = 'none';
+                document.getElementById('cwInputsGroup').style.visibility = 'hidden';
+                document.getElementById('hwInputsGroup').style.visibility = 'hidden';
+            } else {
+                document.getElementById('selectedNodeLabel').innerText = `Node ${id}`;
+                document.getElementById('orgCheckboxContainer').style.display = 'flex';
+                document.getElementById('insertNodeBtn').style.display = 'block';
+                
+                const isOrgCheckbox = document.getElementById('isOrgNode');
+                isOrgCheckbox.checked = node.isOrg;
+
+                if (node.isOrg) {
+                    document.getElementById('cwInputsGroup').style.visibility = 'hidden';
+                    document.getElementById('hwInputsGroup').style.visibility = 'hidden';
+                } else {
+                    document.getElementById('cwInputsGroup').style.visibility = 'visible';
+                    document.getElementById('hwInputsGroup').style.visibility = 'visible';
+                    document.getElementById('cwWfuInput').value = node.cwWfu;
+                    document.getElementById('hwWfuInput').value = node.hwWfu;
+                    document.getElementById('cwGpmOverrideInput').value = node.cwGpmOverride > 0 ? node.cwGpmOverride : '';
+                    document.getElementById('hwGpmOverrideInput').value = node.hwGpmOverride > 0 ? node.hwGpmOverride : '';
+                }
+            }
+
+            // Position control arrows
+            arrowControls.style.display = 'grid';
+            arrowControls.style.left = `${node.x + 25 - 57.5}px`;
+            arrowControls.style.top = `${node.y + 25 - 57.5}px`;
+        }
+
+        function deselectActiveNode() {
+            selectedNodeId = null;
+            document.querySelectorAll('.node').forEach(el => el.classList.remove('selected'));
+            nodeSettings.style.visibility = 'hidden';
+            arrowControls.style.display = 'none';
+        }
+
+        function toggleOrgNode() {
+            if (!selectedNodeId) return;
+            const node = nodes.find(n => n.id === selectedNodeId);
+            if (node && node.parentId !== null) {
+                node.isOrg = document.getElementById('isOrgNode').checked;
+                if (node.isOrg) {
+                    node.cwWfu = 0;
+                    node.hwWfu = 0;
+                    node.cwGpmOverride = 0;
+                    node.hwGpmOverride = 0;
+                }
+                recalculateAndRender();
+                selectNode(node.id);
+            }
+        }
+
+        function addNode(direction) {
+            if (!selectedNodeId) return;
+            const parent = nodes.find(n => n.id === selectedNodeId);
+            if (!parent) return;
+
+            let targetX = parent.x;
+            let targetY = parent.y;
+
+            if (direction === 'up') targetY -= gridSpacing;
+            if (direction === 'down') targetY += gridSpacing;
+            if (direction === 'left') targetX -= gridSpacing;
+            if (direction === 'right') targetX += gridSpacing;
+
+            const existingNode = nodes.find(n => n.x === targetX && n.y === targetY);
+            if (existingNode) {
+                alert("A node already exists at that position!");
+                return;
+            }
+
+            const newNode = createNode(targetX, targetY, parent.id, 0, 0);
+            
+            recalculateAndRender();
+            selectNode(newNode.id);
+        }
+
+        function insertNodeBeforeSelected() {
+            if (!selectedNodeId) return;
+            const selectedNode = nodes.find(n => n.id === selectedNodeId);
+            if (!selectedNode || selectedNode.parentId === null) return;
+
+            const parentNode = nodes.find(n => n.id === selectedNode.parentId);
+            if (!parentNode) return;
+
+            const dx = selectedNode.x - parentNode.x;
+            const dy = selectedNode.y - parentNode.y;
+
+            shiftDescendants(selectedNode.id, dx, dy);
+
+            const intermediateNode = createNode(selectedNode.x - dx, selectedNode.y - dy, parentNode.id, 0, 0);
+            selectedNode.parentId = intermediateNode.id;
+
+            recalculateAndRender();
+            selectNode(intermediateNode.id);
+        }
+
+        function shiftDescendants(nodeId, dx, dy) {
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            node.x += dx;
+            node.y += dy;
+
+            const children = nodes.filter(n => n.parentId === nodeId);
+            children.forEach(child => {
+                shiftDescendants(child.id, dx, dy);
+            });
+        }
+
+        function updateNodeParams() {
+            if (!selectedNodeId) return;
+            const node = nodes.find(n => n.id === selectedNodeId);
+            if (node && !node.isOrg && node.parentId !== null) {
+                node.cwWfu = parseFloat(document.getElementById('cwWfuInput').value) || 0;
+                node.hwWfu = parseFloat(document.getElementById('hwWfuInput').value) || 0;
+                node.cwGpmOverride = parseFloat(document.getElementById('cwGpmOverrideInput').value) || 0;
+                node.hwGpmOverride = parseFloat(document.getElementById('hwGpmOverrideInput').value) || 0;
+                recalculateAndRender();
+            }
+        }
+
+        function getSubtreeDemand(nodeId) {
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return { wfuCw: 0, wfuHw: 0, gpmCw: 0, gpmHw: 0, cwOverridden: false, hwOverridden: false };
+
+            let totalWfuCw = node.isOrg ? 0 : node.cwWfu;
+            let totalWfuHw = node.isOrg ? 0 : node.hwWfu;
+            let totalGpmCw = 0;
+            let totalGpmHw = 0;
+
+            const children = nodes.filter(n => n.parentId === nodeId);
+            children.forEach(child => {
+                const childDemand = getSubtreeDemand(child.id);
+                totalWfuCw += childDemand.wfuCw;
+                totalWfuHw += childDemand.wfuHw;
+                totalGpmCw += childDemand.gpmCw;
+                totalGpmHw += childDemand.gpmHw;
+            });
+
+            let finalWfuCw = totalWfuCw;
+            let finalGpmCw = totalGpmCw;
+            let cwOverridden = !node.isOrg && node.cwGpmOverride > 0;
+            if (cwOverridden) {
+                finalWfuCw = 0; 
+                finalGpmCw = node.cwGpmOverride;
+            }
+
+            let finalWfuHw = totalWfuHw;
+            let finalGpmHw = totalGpmHw;
+            let hwOverridden = !node.isOrg && node.hwGpmOverride > 0;
+            if (hwOverridden) {
+                finalWfuHw = 0;
+                finalGpmHw = node.hwGpmOverride;
+            }
+
+            return {
+                wfuCw: finalWfuCw,
+                wfuHw: finalWfuHw,
+                gpmCw: finalGpmCw,
+                gpmHw: finalGpmHw,
+                cwOverridden: cwOverridden,
+                hwOverridden: hwOverridden
+            };
+        }
+
+        function recalculateAndRender() {
+            nodes.forEach(node => {
+                const demand = getSubtreeDemand(node.id);
+                node.cumulativeCwWfu = demand.wfuCw;
+                node.cumulativeHwWfu = demand.wfuHw;
+                
+                node.computedCwGpm = wfuToGpm(demand.wfuCw) + demand.gpmCw;
+                node.computedHwGpm = wfuToGpm(demand.wfuHw) + demand.gpmHw;
+                
+                node.cwOverridden = demand.cwOverridden;
+                node.hwOverridden = demand.hwOverridden;
+            });
+
+            renderDiagram();
+        }
+
+        function renderDiagram() {
+            nodesContainer.innerHTML = '';
+            pipeLabelsContainer.innerHTML = '';
+            svgLayer.querySelectorAll('line').forEach(l => l.remove());
+
+            const showNonHwrNodes = document.getElementById('showNonHwrNodes').checked;
+            const showSupplyPipes = document.getElementById('showSupplyPipes').checked;
+            const showSupplyBoxes = document.getElementById('showSupplyBoxes').checked;
+            
+            // Force showing HWR features if editing mode is active
+            const showHwrInfo = isHwrMode || document.getElementById('showHwrInfo').checked;
+
+            // 1. Draw HWR custom-routed lines (if visible)
+            if (showHwrInfo && hwrPath.length > 1) {
+                for (let i = 0; i < hwrPath.length - 1; i++) {
+                    const nodeA = nodes.find(n => n.id === hwrPath[i]);
+                    const nodeB = nodes.find(n => n.id === hwrPath[i + 1]);
+                    if (nodeA && nodeB) {
+                        const hwrLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        hwrLine.setAttribute('x1', nodeA.x + 25);
+                        hwrLine.setAttribute('y1', nodeA.y + 25);
+                        hwrLine.setAttribute('x2', nodeB.x + 25);
+                        hwrLine.setAttribute('y2', nodeB.y + 25);
+                        hwrLine.setAttribute('stroke', '#f59e0b');
+                        hwrLine.setAttribute('stroke-width', '2.5');
+                        hwrLine.setAttribute('stroke-dasharray', '6,6');
+                        svgLayer.appendChild(hwrLine);
+                    }
+                }
+            }
+
+            // 2. Draw Nodes and Supply lines
+            nodes.forEach(node => {
+                const hwrIdx = hwrPath.indexOf(node.id);
+                const isHwrNode = hwrIdx !== -1;
+
+                if (!showNonHwrNodes && !isHwrNode && node.parentId !== null) {
+                    return;
+                }
+
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `node ${node.parentId === null ? 'root-node' : ''} ${node.isOrg ? 'org-node' : ''}`;
+                if (node.id === selectedNodeId) nodeEl.classList.add('selected');
+                
+                const showHwrBadgeAndBox = isHwrNode && showHwrInfo;
+                const hwrBadge = showHwrBadgeAndBox ? `<span style="position:absolute; top:-10px; right:-10px; background:var(--hwr-color); color:black; font-weight:900; font-size:10px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;">R${hwrIdx + 1}</span>` : '';
+
+                nodeEl.style.left = `${node.x}px`;
+                nodeEl.style.top = `${node.y}px`;
+                nodeEl.dataset.id = node.id;
+                
+                if (node.parentId === null) {
+                    nodeEl.innerHTML = `INLET ${hwrBadge}`;
+                } else if (node.isOrg) {
+                    nodeEl.innerHTML = `${hwrBadge}`; 
+                } else {
+                    nodeEl.innerHTML = `
+                        <div style="line-height: 1.1; font-size: 9px; padding: 2px;">
+                            C:${node.cwWfu}<br>
+                            H:${node.hwWfu}
+                        </div>
+                        ${hwrBadge}
+                    `;
+                }
+
+                nodeEl.onclick = (e) => {
+                    e.stopPropagation();
+                    selectNode(node.id);
+                };
+                nodesContainer.appendChild(nodeEl);
+
+                // 3. Render HWR Details box outside the node's DOM tree so it stays above all nodes
+                if (showHwrBadgeAndBox) {
+                    const hwrGpmAtNode = (hwrIdx + 1) * 0.5;
+                    const hwrSizeAtNode = getHwrPipeSize(hwrGpmAtNode);
+
+                    const hwrLabel = document.createElement('div');
+                    hwrLabel.className = 'hwr-node-label';
+                    hwrLabel.style.left = `${node.x + 55}px`;
+                    hwrLabel.style.top = `${node.y - 5}px`;
+                    hwrLabel.innerHTML = `
+                        <b>HWR #${hwrIdx + 1}</b><br>
+                        ${hwrGpmAtNode.toFixed(1)} GPM<br>
+                        Size: ${hwrSizeAtNode}
+                    `;
+                    pipeLabelsContainer.appendChild(hwrLabel);
+                }
+
+                // Supply lines & Pipe boxes logic
+                if (node.parentId !== null) {
+                    const parentNode = nodes.find(n => n.id === node.parentId);
+                    const isParentVisible = parentNode && (parentNode.parentId === null || showNonHwrNodes || hwrPath.indexOf(parentNode.id) !== -1);
+
+                    if (parentNode && showSupplyPipes && isParentVisible) {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        const x1 = parentNode.x + 25;
+                        const y1 = parentNode.y + 25;
+                        const x2 = node.x + 25;
+                        const y2 = node.y + 25;
+
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', '#60a5fa'); 
+                        line.setAttribute('stroke-width', '4');
+                        line.setAttribute('marker-end', 'url(#arrow-cw)');
+                        svgLayer.appendChild(line);
+
+                        // Overlay labels box for the water supply pipelines
+                        if (showSupplyBoxes) {
+                            const midX = (x1 + x2) / 2;
+                            const midY = (y1 + y2) / 2;
+
+                            const wrapperEl = document.createElement('div');
+                            wrapperEl.className = 'pipe-label-wrapper';
+                            wrapperEl.style.left = `${midX}px`;
+                            wrapperEl.style.top = `${midY}px`;
+
+                            const cwGpmVal = node.computedCwGpm;
+                            const hwGpmVal = node.computedHwGpm;
+                            const cwSize = getPipeSize(cwGpmVal);
+                            const hwSize = getPipeSize(hwGpmVal);
+
+                            const cwDetail = node.cwOverridden 
+                                ? `<span class="override-tag">Override: ${cwGpmVal.toFixed(1)} GPM</span>` 
+                                : `<span class="flow-demand">${node.cumulativeCwWfu} WFU (${cwGpmVal.toFixed(1)} GPM)</span>`;
+                            
+                            const hwDetail = node.hwOverridden 
+                                ? `<span class="override-tag">Override: ${hwGpmVal.toFixed(1)} GPM</span>` 
+                                : `<span class="flow-demand">${node.cumulativeHwWfu} WFU (${hwGpmVal.toFixed(1)} GPM)</span>`;
+
+                            const labelHtml = `
+                                <div class="pipe-label">
+                                    <div style="margin-bottom: 2px;">${cwDetail}</div>
+                                    <div style="margin-bottom: 4px;">${hwDetail}</div>
+                                    <span class="cw">CW: ${cwSize}</span> | <span class="hw">HW: ${hwSize}</span>
+                                </div>
+                            `;
+
+                            const dx = x2 - x1;
+                            const dy = y2 - y1;
+                            const isHorizontal = Math.abs(dx) > Math.abs(dy);
+
+                            let arrowHtml = '';
+                            if (isHorizontal) {
+                                const arrowSymbol = dx > 0 ? '→' : '←';
+                                arrowHtml = `<div class="flow-indicator" style="bottom: 100%; margin-bottom: 4px;">${arrowSymbol}</div>`;
+                            } else {
+                                const arrowSymbol = dy > 0 ? '↓' : '↑';
+                                arrowHtml = `<div class="flow-indicator" style="right: 100%; margin-right: 8px;">${arrowSymbol}</div>`;
+                            }
+
+                            wrapperEl.innerHTML = `${arrowHtml}${labelHtml}`;
+                            pipeLabelsContainer.appendChild(wrapperEl);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Print & PDF layout configuration
+        function printDiagram() {
+            deselectActiveNode();
+
+            // 1. Calculate boundaries of our riser diagram
+            if (nodes.length === 0) return;
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+
+            nodes.forEach(n => {
+                // Determine visibility limits
+                const isHwrNode = hwrPath.indexOf(n.id) !== -1;
+                const showNonHwrNodes = document.getElementById('showNonHwrNodes').checked;
+
+                if (showNonHwrNodes || isHwrNode || n.parentId === null) {
+                    minX = Math.min(minX, n.x);
+                    maxX = Math.max(maxX, n.x);
+                    minY = Math.min(minY, n.y);
+                    maxY = Math.max(maxY, n.y);
+                }
+            });
+
+            // Fallback defaults
+            if (minX === Infinity) { minX = 1400; maxX = 1600; minY = 1400; maxY = 1600; }
+
+            // Apply safety margins (180px) to capture side boxes
+            const padding = 180;
+            const printWidth = (maxX - minX) + (padding * 2);
+            const printHeight = (maxY - minY) + (padding * 2);
+
+            // Store styles for recovery
+            const originalCanvasWidth = canvas.style.width;
+            const originalCanvasHeight = canvas.style.height;
+            const originalCanvasTransform = canvas.style.transform;
+            const originalCanvasTop = canvas.style.top;
+            const originalCanvasLeft = canvas.style.left;
+
+            // Crop canvas coordinates to capture only the diagram contents
+            canvas.style.width = `${printWidth}px`;
+            canvas.style.height = `${printHeight}px`;
+            canvas.style.left = `0px`;
+            canvas.style.top = `0px`;
+
+            // Offset all elements dynamically to scale fit the PDF canvas
+            const elementsToShift = [nodesContainer, pipeLabelsContainer, svgLayer];
+            const shiftX = -(minX - padding);
+            const shiftY = -(minY - padding);
+
+            elementsToShift.forEach(el => {
+                el.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+            });
+
+            // 2. Trigger System Print Layout
+            window.print();
+
+            // 3. Restore Workspace back to original state
+            canvas.style.width = originalCanvasWidth;
+            canvas.style.height = originalCanvasHeight;
+            canvas.style.left = originalCanvasLeft;
+            canvas.style.top = originalCanvasTop;
+
+            elementsToShift.forEach(el => {
+                el.style.transform = '';
+            });
+        }
+
+        // Global workspace body click listener
+        workspace.onclick = (e) => {
+            if (!isHwrMode) {
+                deselectActiveNode();
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
