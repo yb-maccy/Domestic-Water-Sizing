@@ -50,7 +50,7 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 1250px;
+            max-width: 1350px;
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
@@ -120,24 +120,23 @@
             background-color: #b45309;
         }
 
-        .btn-success {
-            background-color: #10b981;
+        .btn-nav {
+            background-color: #4b5563;
         }
-        .btn-success:hover {
-            background-color: #059669;
+        .btn-nav:hover {
+            background-color: #374151;
         }
 
         .node-settings {
             display: flex;
-            align-items: stretch;
+            align-items: center;
             flex-wrap: wrap;
             gap: 15px;
             background: rgba(255, 255, 255, 0.05);
             padding: 12px 20px;
             border-radius: 8px;
             border: 1px solid var(--border);
-            min-height: 72px; 
-            min-width: 500px;
+            min-height: 72px;
         }
 
         .settings-meta {
@@ -155,8 +154,18 @@
             justify-content: center;
             border-left: 1px solid var(--border);
             padding-left: 15px;
-            width: 150px;
+            width: 160px;
             visibility: visible; 
+        }
+
+        .hydraulic-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            justify-content: center;
+            border-left: 1.5px dashed var(--accent);
+            padding-left: 15px;
+            width: 190px;
         }
 
         .input-row {
@@ -167,25 +176,26 @@
         }
 
         .node-settings label {
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .node-settings input {
-            width: 70px;
+            width: 65px;
             background: #111827;
             border: 1px solid var(--border);
             color: white;
-            padding: 6px;
+            padding: 4px 6px;
             border-radius: 4px;
             text-align: center;
+            font-size: 11px;
         }
 
         .checkbox-container {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
+            font-size: 11px;
             cursor: pointer;
             user-select: none;
         }
@@ -213,20 +223,34 @@
         /* Designer Workspace */
         .workspace {
             position: relative;
-            height: 600px;
-            overflow: auto;
+            height: 650px;
+            overflow: hidden;
             background-color: #111827;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .workspace:active {
+            cursor: grabbing;
+        }
+
+        /* Panning/Zooming Container */
+        .pan-zoom-container {
+            position: absolute;
+            width: 5000px;
+            height: 5000px;
+            transform-origin: 0 0;
             background-image: 
-                radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 0),
-                radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 0);
+                radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 0),
+                radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 0);
             background-size: 40px 40px;
             background-position: 0 0, 20px 20px;
         }
 
         .canvas {
             position: absolute;
-            width: 3000px;
-            height: 3000px;
+            width: 100%;
+            height: 100%;
             top: 0;
             left: 0;
         }
@@ -242,7 +266,7 @@
             z-index: 1;
         }
 
-        /* Node Styling */
+        /* Node Styling - z-index kept lower than labels */
         .node {
             position: absolute;
             width: 50px;
@@ -257,7 +281,7 @@
             font-size: 11px;
             color: white;
             cursor: pointer;
-            z-index: 10; /* Lower than label overlays so boxes are always on top */
+            z-index: 10;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             transition: transform 0.1s, box-shadow 0.1s;
             text-align: center;
@@ -291,7 +315,7 @@
             grid-template-columns: repeat(3, 35px);
             grid-template-rows: repeat(3, 35px);
             gap: 5px;
-            z-index: 30;
+            z-index: 50;
             pointer-events: none;
         }
 
@@ -343,11 +367,11 @@
             border-radius: 50%;
         }
 
-        /* Pipe flow labels (HTML overlay container) */
+        /* Pipe flow labels - RENDERS ABOVE NODES */
         .pipe-label-wrapper {
             position: absolute;
             transform: translate(-50%, -50%);
-            z-index: 20; /* Renders completely above nodes */
+            z-index: 40; /* Higher than .node (10) and .hwr-node-label (30) */
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -358,19 +382,21 @@
         .pipe-label {
             background: rgba(17, 24, 39, 0.95);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 4px 8px;
+            border-radius: 6px;
+            padding: 6px 10px;
             font-size: 10px;
             white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             text-align: center;
+            pointer-events: auto; /* Clickable if needed */
         }
 
-        .pipe-label .cw { color: var(--cw-color); }
-        .pipe-label .hw { color: var(--hw-color); }
+        .pipe-label .cw { color: var(--cw-color); font-weight: bold; }
+        .pipe-label .hw { color: var(--hw-color); font-weight: bold; }
         .pipe-label .hwr { color: var(--hwr-color); font-weight: bold; }
         .pipe-label .flow-demand { color: var(--text-muted); font-weight: bold;}
         .pipe-label .override-tag { color: #f59e0b; font-size: 9px; font-weight: bold;}
+        .pipe-label .hydraulics-tag { color: #10b981; font-size: 9px; margin-top: 2px;}
 
         /* Flow directional visual indicators outside the label card */
         .flow-indicator {
@@ -380,11 +406,7 @@
             font-weight: bold;
             line-height: 1;
             text-shadow: 0 0 4px rgba(16, 185, 129, 0.8);
-        }
-
-        .flow-indicator.hwr-indicator {
-            color: var(--hwr-color);
-            text-shadow: 0 0 4px rgba(245, 158, 11, 0.8);
+            z-index: 41;
         }
 
         /* Toast Alert style */
@@ -405,9 +427,11 @@
             display: none;
         }
 
-        /* HWR Node Overlay label (moved outside of node tree to overlay context) */
+        /* HWR Node Overlay label - RENDERS ABOVE NODES */
         .hwr-node-label {
             position: absolute;
+            left: 55px;
+            top: -5px;
             background: rgba(17, 24, 39, 0.95);
             border: 1px solid var(--hwr-color);
             color: var(--text);
@@ -415,8 +439,8 @@
             border-radius: 4px;
             font-size: 10px;
             white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-            z-index: 20; /* High z-index to stay above other nodes */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+            z-index: 30; /* Higher than .node (10) */
             text-align: left;
             line-height: 1.3;
             pointer-events: none;
@@ -426,48 +450,19 @@
             font-size: 11px;
         }
 
-        /* PRINTING STYLESheet Override */
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-            header, .controls, .legend, .node-builder-arrows, .mode-banner {
-                display: none !important;
-            }
-            .container {
-                border: none !important;
-                box-shadow: none !important;
-                background: white !important;
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-            .workspace {
-                height: auto !important;
-                overflow: visible !important;
-                background: white !important;
-            }
-            .canvas {
-                /* Dynamically handled in JS, but resets defaults */
-                background: white !important;
-            }
-            .node {
-                box-shadow: none !important;
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
-            .pipe-label {
-                background: white !important;
-                color: black !important;
-                border: 1px solid #000 !important;
-            }
-            .hwr-node-label {
-                background: white !important;
-                color: black !important;
-                border: 1.5px solid #d97706 !important;
-            }
+        /* Zoom control badge */
+        .zoom-badge {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 100;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -475,38 +470,38 @@
 
     <header>
         <h1>Interactive Water Riser Diagram Designer</h1>
-        <p>Build, track domestic loads, and design custom Hot Water Return (HWR) paths.</p>
+        <p>Dynamic Hazen-Williams Type L Copper Sizing • Unlimited Workspace with Pan & Zoom</p>
     </header>
 
     <div class="container">
         <!-- Control Toolbar -->
         <div class="controls">
             <div class="control-row" style="margin-bottom: 10px;">
-                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <button class="btn btn-danger" onclick="resetCanvas()">Reset All</button>
                     <button class="btn btn-hwr" onclick="toggleHwrMode()" id="hwrModeBtn">Design HWR Path</button>
                     <button class="btn btn-danger" style="background-color: #78350f;" onclick="resetHwrOnly()">Reset HWR Only</button>
-                    <button class="btn btn-success" onclick="printDiagram()">Print / Save PDF</button>
+                    <button class="btn btn-nav" onclick="recenterToInlet()">Center to Inlet</button>
                     
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <label for="systemType" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">System Curve:</label>
+                        <label for="systemType" style="font-weight: 600; font-size: 13px; color: var(--text-muted);">Curve:</label>
                         <select id="systemType" class="system-select" onchange="recalculateAndRender()">
-                            <option value="tank">Flush Tank Primary</option>
-                            <option value="valve">Flush Valve Primary</option>
+                            <option value="tank">Flush Tank</option>
+                            <option value="valve">Flush Valve</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="node-settings" id="nodeSettings" style="visibility: hidden;">
                     <div class="settings-meta">
-                        <span id="selectedNodeLabel" style="font-weight: bold; color: #34d399;">Node 1</span>
+                        <span id="selectedNodeLabel" style="font-weight: bold; color: #34d399; font-size: 13px;">Node 1</span>
                         <label class="checkbox-container" id="orgCheckboxContainer">
                             <input type="checkbox" id="isOrgNode" onchange="toggleOrgNode()"> Org Node (No flow)
                         </label>
-                        <button class="btn" id="insertNodeBtn" style="padding: 4px 8px; font-size: 11px; background: #4f46e5;" onclick="insertNodeBeforeSelected()">Insert Node Before</button>
+                        <button class="btn" id="insertNodeBtn" style="padding: 4px 8px; font-size: 10px; background: #4f46e5;" onclick="insertNodeBeforeSelected()">Insert Node Before</button>
                     </div>
                     
-                    <!-- CW inputs Grouped Vertically -->
+                    <!-- CW inputs -->
                     <div class="settings-group" id="cwInputsGroup">
                         <div class="input-row">
                             <label for="cwWfuInput" style="color: var(--cw-color);">CW WFU:</label>
@@ -518,7 +513,7 @@
                         </div>
                     </div>
 
-                    <!-- HW inputs Grouped Vertically -->
+                    <!-- HW inputs -->
                     <div class="settings-group" id="hwInputsGroup">
                         <div class="input-row">
                             <label for="hwWfuInput" style="color: var(--hw-color);">HW WFU:</label>
@@ -527,6 +522,22 @@
                         <div class="input-row">
                             <label for="hwGpmOverrideInput" style="color: var(--hw-color);">HW GPM Ovr:</label>
                             <input type="number" id="hwGpmOverrideInput" min="0" step="0.5" value="0" placeholder="Off" oninput="updateNodeParams()">
+                        </div>
+                    </div>
+
+                    <!-- Upstream Connection Hydraulics (Fitted on ALL nodes) -->
+                    <div class="hydraulic-group" id="hydraulicsGroup">
+                        <div class="input-row">
+                            <label for="nodeMaxLoss" style="color: #10b981;">Max Loss / 100':</label>
+                            <input type="number" id="nodeMaxLoss" min="0.1" step="0.1" value="10" oninput="updateNodeParams()">
+                        </div>
+                        <div class="input-row">
+                            <label for="nodeMaxVel" style="color: #10b981;">Max Velocity (fps):</label>
+                            <input type="number" id="nodeMaxVel" min="0.1" step="0.1" value="5" oninput="updateNodeParams()">
+                        </div>
+                        <div class="input-row">
+                            <label for="nodeCFactor" style="color: #10b981;">C-Factor:</label>
+                            <input type="number" id="nodeCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
                         </div>
                     </div>
                 </div>
@@ -546,39 +557,43 @@
                 <label class="toggle-item">
                     <input type="checkbox" id="showHwrInfo" checked onchange="recalculateAndRender()"> Show Hot Water Return
                 </label>
+                <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Drag canvas to Pan • Scroll wheel to Zoom</span>
             </div>
         </div>
 
         <!-- Designer Workspace -->
         <div class="workspace" id="workspace">
             <div class="mode-banner" id="modeBanner">HWR ROUTING MODE: Click nodes in sequence to link return path</div>
-            <div class="canvas" id="canvas">
-                <!-- SVG layer for pipelines -->
-                <svg class="pipe-layer" id="svgLayer">
-                    <defs>
-                        <!-- Arrow markers for water flow direction -->
-                        <marker id="arrow-cw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
-                        </marker>
-                        <marker id="arrow-hw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#f87171" />
-                        </marker>
-                    </defs>
-                </svg>
+            <div class="zoom-badge" id="zoomBadge">Zoom: 100%</div>
+            
+            <div class="pan-zoom-container" id="panZoomContainer">
+                <div class="canvas" id="canvas">
+                    <!-- SVG layer for pipelines -->
+                    <svg class="pipe-layer" id="svgLayer">
+                        <defs>
+                            <marker id="arrow-cw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
+                            </marker>
+                            <marker id="arrow-hw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#f87171" />
+                            </marker>
+                        </defs>
+                    </svg>
 
-                <!-- Floating controls for selected node -->
-                <div class="node-builder-arrows" id="arrowControls">
-                    <button class="arrow-btn" style="grid-column: 2; grid-row: 1;" onclick="addNode('up')">↑</button>
-                    <button class="arrow-btn" style="grid-column: 1; grid-row: 2;" onclick="addNode('left')">←</button>
-                    <button class="arrow-btn" style="grid-column: 3; grid-row: 2;" onclick="addNode('right')">→</button>
-                    <button class="arrow-btn" style="grid-column: 2; grid-row: 3;" onclick="addNode('down')">↓</button>
+                    <!-- Floating controls for selected node -->
+                    <div class="node-builder-arrows" id="arrowControls">
+                        <button class="arrow-btn" style="grid-column: 2; grid-row: 1;" onclick="addNode('up')">↑</button>
+                        <button class="arrow-btn" style="grid-column: 1; grid-row: 2;" onclick="addNode('left')">←</button>
+                        <button class="arrow-btn" style="grid-column: 3; grid-row: 2;" onclick="addNode('right')">→</button>
+                        <button class="arrow-btn" style="grid-column: 2; grid-row: 3;" onclick="addNode('down')">↓</button>
+                    </div>
+
+                    <!-- HTML Pipe text labels -->
+                    <div id="pipeLabelsContainer"></div>
+
+                    <!-- Nodes -->
+                    <div id="nodesContainer"></div>
                 </div>
-
-                <!-- Nodes Container rendered BELOW Pipe Labels overlay for accurate overlapping -->
-                <div id="nodesContainer"></div>
-
-                <!-- HTML overlay containers for labels and boxes (rendered last for highest stacking) -->
-                <div id="pipeLabelsContainer"></div>
             </div>
         </div>
 
@@ -608,19 +623,23 @@
     </div>
 
     <script>
-        const sizingTable = [
-            { maxGpm: 1.5, size: '3/8"' },
-            { maxGpm: 5.0, size: '1/2"' },
-            { maxGpm: 10.0, size: '3/4"' },
-            { maxGpm: 22.0, size: '1"' },
-            { maxGpm: 39.0, size: '1-1/4"' },
-            { maxGpm: 55.0, size: '1-1/2"' },
-            { maxGpm: 110.0, size: '2"' },
-            { maxGpm: 175.0, size: '2-1/2"' },
-            { maxGpm: 280.0, size: '3"' },
-            { maxGpm: 600.0, size: '4"' }
+        // Type L Copper inside diameters (inches) from 1/2" to 8"
+        const copperTypeL = [
+            { nominal: '1/2"', id: 0.545 },
+            { nominal: '3/4"', id: 0.785 },
+            { nominal: '1"', id: 1.025 },
+            { nominal: '1-1/4"', id: 1.265 },
+            { nominal: '1-1/2"', id: 1.505 },
+            { nominal: '2"', id: 1.985 },
+            { nominal: '2-1/2"', id: 2.465 },
+            { nominal: '3"', id: 2.945 },
+            { nominal: '4"', id: 3.905 },
+            { nominal: '5"', id: 4.875 },
+            { nominal: '6"', id: 5.845 },
+            { nominal: '8"', id: 7.725 }
         ];
 
+        // HWR loop standard lookup sizes (1/2" up to 8")
         const hwrSizingTable = [
             { maxGpm: 5.0, size: '1/2"' },
             { maxGpm: 10.0, size: '3/4"' },
@@ -630,15 +649,114 @@
             { maxGpm: 110.0, size: '2"' },
             { maxGpm: 175.0, size: '2-1/2"' },
             { maxGpm: 280.0, size: '3"' },
-            { maxGpm: 600.0, size: '4"' }
+            { maxGpm: 600.0, size: '4"' },
+            { maxGpm: 1000.0, size: '5"' },
+            { maxGpm: 1500.0, size: '6"' },
+            { maxGpm: 3000.0, size: '8"' }
         ];
 
-        function getPipeSize(gpm) {
-            if (gpm <= 0) return 'N/A';
-            for (let bracket of sizingTable) {
-                if (gpm <= bracket.maxGpm) return bracket.size;
+        // Your custom Flush Tank & Flush Valve tables
+        const tankWfuGpm = [
+            {wfu: 0, gpm: 0}, {wfu: 1, gpm: 3}, {wfu: 3, gpm: 5}, {wfu: 4, gpm: 8}, {wfu: 5, gpm: 9.4}, 
+            {wfu: 6, gpm: 9.4}, {wfu: 7, gpm: 11.8}, {wfu: 8, gpm: 12.8}, {wfu: 9, gpm: 13.7}, {wfu: 10, gpm: 14.6}, 
+            {wfu: 12, gpm: 16}, {wfu: 13, gpm: 16.5}, {wfu: 15, gpm: 17.5}, {wfu: 16, gpm: 18}, {wfu: 18, gpm: 18.8}, 
+            {wfu: 20, gpm: 19.6}, {wfu: 21, gpm: 20}, {wfu: 23, gpm: 20.8}, {wfu: 24, gpm: 21.2}, {wfu: 25, gpm: 21.5}, 
+            {wfu: 28, gpm: 22.4}, {wfu: 30, gpm: 23.3}, {wfu: 32, gpm: 23.6}, {wfu: 34, gpm: 24}, {wfu: 36, gpm: 25}, 
+            {wfu: 39, gpm: 26}, {wfu: 42, gpm: 27}, {wfu: 44, gpm: 27.5}, {wfu: 46, gpm: 28}, {wfu: 49, gpm: 29}, 
+            {wfu: 51, gpm: 29.3}, {wfu: 54, gpm: 29.5}, {wfu: 56, gpm: 30}, {wfu: 58, gpm: 31}, {wfu: 60, gpm: 32}, 
+            {wfu: 63, gpm: 33}, {wfu: 66, gpm: 34}, {wfu: 69, gpm: 34.9}, {wfu: 74, gpm: 37}, {wfu: 78, gpm: 38}, 
+            {wfu: 83, gpm: 39}, {wfu: 86, gpm: 40}, {wfu: 90, gpm: 41}, {wfu: 95, gpm: 42}, {wfu: 100, gpm: 43.5}, 
+            {wfu: 103, gpm: 44}, {wfu: 107, gpm: 45}, {wfu: 111, gpm: 46}, {wfu: 115, gpm: 47}, {wfu: 119, gpm: 48}, 
+            {wfu: 123, gpm: 49}, {wfu: 127, gpm: 50}, {wfu: 130, gpm: 51}, {wfu: 135, gpm: 52}, {wfu: 141, gpm: 53}, 
+            {wfu: 146, gpm: 54}, {wfu: 151, gpm: 55}, {wfu: 155, gpm: 56}, {wfu: 160, gpm: 57}, {wfu: 165, gpm: 58}, 
+            {wfu: 170, gpm: 59}, {wfu: 175, gpm: 60}, {wfu: 185, gpm: 62}, {wfu: 195, gpm: 64}, {wfu: 205, gpm: 66}, 
+            {wfu: 215, gpm: 68}, {wfu: 225, gpm: 70}, {wfu: 236, gpm: 72}, {wfu: 245, gpm: 74}, {wfu: 254, gpm: 76}, 
+            {wfu: 264, gpm: 78}, {wfu: 275, gpm: 80}, {wfu: 284, gpm: 82}, {wfu: 294, gpm: 84}, {wfu: 305, gpm: 86}, 
+            {wfu: 315, gpm: 88}, {wfu: 326, gpm: 90}, {wfu: 337, gpm: 92}, {wfu: 348, gpm: 94}, {wfu: 359, gpm: 96}, 
+            {wfu: 370, gpm: 98}, {wfu: 380, gpm: 100}, {wfu: 406, gpm: 105}, {wfu: 431, gpm: 110}, {wfu: 455, gpm: 115}, 
+            {wfu: 479, gpm: 120}, {wfu: 506, gpm: 125}, {wfu: 533, gpm: 130}, {wfu: 559, gpm: 135}, {wfu: 585, gpm: 140}, 
+            {wfu: 611, gpm: 145}, {wfu: 638, gpm: 150}, {wfu: 665, gpm: 155}, {wfu: 692, gpm: 160}, {wfu: 719, gpm: 165}, 
+            {wfu: 748, gpm: 170}, {wfu: 778, gpm: 175}, {wfu: 809, gpm: 180}, {wfu: 840, gpm: 185}, {wfu: 874, gpm: 190}, 
+            {wfu: 945, gpm: 200}, {wfu: 1018, gpm: 210}, {wfu: 1091, gpm: 220}, {wfu: 1173, gpm: 230}, {wfu: 1254, gpm: 240}, 
+            {wfu: 1335, gpm: 250}, {wfu: 1418, gpm: 260}, {wfu: 1500, gpm: 270}, {wfu: 1583, gpm: 280}, {wfu: 1668, gpm: 290}, 
+            {wfu: 1755, gpm: 300}, {wfu: 1845, gpm: 310}, {wfu: 1926, gpm: 320}, {wfu: 2018, gpm: 330}, {wfu: 2110, gpm: 340}, 
+            {wfu: 2204, gpm: 350}, {wfu: 2298, gpm: 360}, {wfu: 2388, gpm: 370}, {wfu: 2480, gpm: 380}, {wfu: 2575, gpm: 390}, 
+            {wfu: 2670, gpm: 400}, {wfu: 2765, gpm: 410}, {wfu: 2862, gpm: 420}, {wfu: 2960, gpm: 430}, {wfu: 3060, gpm: 440}, 
+            {wfu: 3150, gpm: 450}, {wfu: 3620, gpm: 500}, {wfu: 4070, gpm: 550}, {wfu: 4480, gpm: 600}, {wfu: 5380, gpm: 700}, 
+            {wfu: 6280, gpm: 800}, {wfu: 7280, gpm: 900}, {wfu: 8300, gpm: 1000}
+        ];
+
+        const valveWfuGpm = [
+            {wfu: 0, gpm: 0}, {wfu: 5, gpm: 14.6}, {wfu: 6, gpm: 17.5}, {wfu: 7, gpm: 19.6}, {wfu: 8, gpm: 22.4}, 
+            {wfu: 9, gpm: 24}, {wfu: 10, gpm: 26}, {wfu: 11, gpm: 27.5}, {wfu: 12, gpm: 29}, {wfu: 13, gpm: 29.3}, 
+            {wfu: 14, gpm: 30}, {wfu: 15, gpm: 31}, {wfu: 16, gpm: 32}, {wfu: 18, gpm: 33}, {wfu: 19, gpm: 34}, 
+            {wfu: 20, gpm: 34.9}, {wfu: 25, gpm: 37}, {wfu: 27, gpm: 39}, {wfu: 28, gpm: 40}, {wfu: 29, gpm: 41}, 
+            {wfu: 30, gpm: 42}, {wfu: 34, gpm: 43.5}, {wfu: 35, gpm: 44}, {wfu: 39, gpm: 45}, {wfu: 44, gpm: 46}, 
+            {wfu: 45, gpm: 47}, {wfu: 48, gpm: 49}, {wfu: 50, gpm: 50}, {wfu: 52, gpm: 51}, {wfu: 54, gpm: 52}, 
+            {wfu: 57, gpm: 53}, {wfu: 60, gpm: 54}, {wfu: 62, gpm: 55}, {wfu: 64, gpm: 56}, {wfu: 67, gpm: 57}, 
+            {wfu: 70, gpm: 58}, {wfu: 74, gpm: 59}, {wfu: 79, gpm: 60}, {wfu: 85, gpm: 62}, {wfu: 90, gpm: 64}, 
+            {wfu: 99, gpm: 66}, {wfu: 105, gpm: 68}, {wfu: 110, gpm: 70}, {wfu: 115, gpm: 72}, {wfu: 125, gpm: 74}, 
+            {wfu: 135, gpm: 76}, {wfu: 150, gpm: 78}, {wfu: 155, gpm: 80}, {wfu: 165, gpm: 82}, {wfu: 175, gpm: 84}, 
+            {wfu: 180, gpm: 86}, {wfu: 190, gpm: 88}, {wfu: 200, gpm: 90}, {wfu: 210, gpm: 92}, {wfu: 215, gpm: 94}, 
+            {wfu: 224, gpm: 96}, {wfu: 230, gpm: 98}, {wfu: 245, gpm: 100}, {wfu: 270, gpm: 105}, {wfu: 310, gpm: 110}, 
+            {wfu: 350, gpm: 115}, {wfu: 370, gpm: 120}, {wfu: 390, gpm: 125}, {wfu: 410, gpm: 130}, {wfu: 450, gpm: 135}, 
+            {wfu: 475, gpm: 140}, {wfu: 525, gpm: 145}, {wfu: 550, gpm: 150}, {wfu: 575, gpm: 155}, {wfu: 600, gpm: 160}, 
+            {wfu: 650, gpm: 165}, {wfu: 700, gpm: 170}, {wfu: 750, gpm: 175}, {wfu: 800, gpm: 180}, {wfu: 850, gpm: 185}, 
+            {wfu: 900, gpm: 190}, {wfu: 990, gpm: 200}, {wfu: 1100, gpm: 210}, {wfu: 1150, gpm: 220}, {wfu: 1200, gpm: 230}, 
+            {wfu: 1250, gpm: 240}, {wfu: 1335, gpm: 250}, {wfu: 1418, gpm: 260}, {wfu: 1500, gpm: 270}, {wfu: 1583, gpm: 280}, 
+            {wfu: 1668, gpm: 290}, {wfu: 1755, gpm: 300}, {wfu: 1845, gpm: 310}, {wfu: 1926, gpm: 320}, {wfu: 2018, gpm: 330}, 
+            {wfu: 2110, gpm: 340}, {wfu: 2204, gpm: 350}, {wfu: 2298, gpm: 360}, {wfu: 2388, gpm: 370}, {wfu: 2480, gpm: 380}, 
+            {wfu: 2575, gpm: 390}, {wfu: 2670, gpm: 400}, {wfu: 2765, gpm: 410}, {wfu: 2862, gpm: 420}, {wfu: 2960, gpm: 430}, 
+            {wfu: 3060, gpm: 440}, {wfu: 3150, gpm: 450}, {wfu: 3620, gpm: 500}, {wfu: 4070, gpm: 550}, {wfu: 4480, gpm: 600}, 
+            {wfu: 5380, gpm: 700}, {wfu: 6280, gpm: 800}, {wfu: 7280, gpm: 900}, {wfu: 8300, gpm: 1000}
+        ];
+
+        // Linear interpolation helper
+        function interpolateWfu(wfu, lookupTable) {
+            if (wfu <= 0) return 0;
+            // Check boundaries
+            if (wfu <= lookupTable[0].wfu) return lookupTable[0].gpm;
+            if (wfu >= lookupTable[lookupTable.length - 1].wfu) return lookupTable[lookupTable.length - 1].gpm;
+
+            for (let i = 0; i < lookupTable.length - 1; i++) {
+                const pt1 = lookupTable[i];
+                const pt2 = lookupTable[i+1];
+                if (wfu >= pt1.wfu && wfu <= pt2.wfu) {
+                    const ratio = (wfu - pt1.wfu) / (pt2.wfu - pt1.wfu);
+                    return pt1.gpm + ratio * (pt2.gpm - pt1.gpm);
+                }
             }
-            return '4"+';
+            return 0;
+        }
+
+        function wfuToGpm(wfu) {
+            const system = document.getElementById('systemType').value;
+            if (system === 'tank') {
+                return interpolateWfu(wfu, tankWfuGpm);
+            } else {
+                return interpolateWfu(wfu, valveWfuGpm);
+            }
+        }
+
+        // Hazen-Williams Head Loss and Velocity Pipe Sizing calculation
+        function calculateHydraulicPipeSize(gpm, maxLoss, maxVel, cFactor) {
+            if (gpm <= 0) return { size: 'N/A', velocity: 0, headLoss: 0 };
+            
+            for (let i = 0; i < copperTypeL.length; i++) {
+                const pipe = copperTypeL[i];
+                const d = pipe.id; // Inside diameter in inches
+                
+                // Velocity in feet per second (fps)
+                const v = 0.4085 * (gpm / (d * d));
+                
+                // Friction loss per 100 feet (ft of water / 100')
+                const h100 = 0.2083 * Math.pow(100 / cFactor, 1.85) * (Math.pow(gpm, 1.85) / Math.pow(d, 4.8655));
+
+                if (v <= maxVel && h100 <= maxLoss) {
+                    return { size: pipe.nominal, velocity: v, headLoss: h100 };
+                }
+            }
+            return { size: '8"+', velocity: 999, headLoss: 999 };
         }
 
         function getHwrPipeSize(gpm) {
@@ -646,51 +764,29 @@
             for (let bracket of hwrSizingTable) {
                 if (gpm <= bracket.maxGpm) return bracket.size;
             }
-            return '4"+';
-        }
-
-        function wfuToGpm(wfu) {
-            if (wfu <= 0) return 0;
-            const system = document.getElementById('systemType').value;
-
-            if (system === 'tank') {
-                if (wfu <= 1) return 3.0;
-                if (wfu <= 4) return 3.0 + (wfu - 1) * (8.0 - 3.0) / 3.0;
-                if (wfu <= 9) return 8.0 + (wfu - 4) * (15.0 - 8.0) / 5.0;
-                if (wfu <= 20) return 15.0 + (wfu - 9) * (25.0 - 15.0) / 11.0;
-                if (wfu <= 45) return 25.0 + (wfu - 20) * (40.0 - 25.0) / 25.0;
-                if (wfu <= 75) return 40.0 + (wfu - 45) * (55.0 - 40.0) / 30.0;
-                if (wfu <= 180) return 55.0 + (wfu - 75) * (80.0 - 55.0) / 105.0;
-                if (wfu <= 350) return 80.0 + (wfu - 180) * (110.0 - 80.0) / 170.0;
-                if (wfu <= 600) return 110.0 + (wfu - 350) * (150.0 - 110.0) / 250.0;
-                if (wfu <= 1200) return 150.0 + (wfu - 600) * (250.0 - 150.0) / 600.0;
-                return 250.0 + (wfu - 1200) * 0.15;
-            } else {
-                if (wfu <= 5) return 15.0;
-                if (wfu <= 10) return 15.0 + (wfu - 5) * (27.0 - 15.0) / 5.0;
-                if (wfu <= 20) return 27.0 + (wfu - 10) * (35.0 - 27.0) / 10.0;
-                if (wfu <= 45) return 35.0 + (wfu - 20) * (53.0 - 35.0) / 25.0;
-                if (wfu <= 75) return 53.0 + (wfu - 45) * (65.0 - 53.0) / 30.0;
-                if (wfu <= 180) return 65.0 + (wfu - 75) * (94.0 - 65.0) / 105.0;
-                if (wfu <= 350) return 94.0 + (wfu - 180) * (128.0 - 94.0) / 170.0;
-                if (wfu <= 600) return 128.0 + (wfu - 350) * (170.0 - 128.0) / 250.0;
-                if (wfu <= 1200) return 170.0 + (wfu - 600) * (275.0 - 170.0) / 600.0;
-                return 275.0 + (wfu - 1200) * 0.15;
-            }
+            return '8"+';
         }
 
         // State variables
         let nodes = [];
         let selectedNodeId = null;
         let nodeCounter = 0;
-        const gridSpacing = 150; 
+        const gridSpacing = 160; 
 
         // HWR System state
         let isHwrMode = false;
         let hwrPath = []; 
 
+        // Pan and Zoom Workspace state
+        let panX = -1000;
+        let panY = -1200;
+        let scale = 0.75;
+        let isPanning = false;
+        let startX, startY;
+
         const canvas = document.getElementById('canvas');
         const workspace = document.getElementById('workspace');
+        const panZoomContainer = document.getElementById('panZoomContainer');
         const nodesContainer = document.getElementById('nodesContainer');
         const pipeLabelsContainer = document.getElementById('pipeLabelsContainer');
         const svgLayer = document.getElementById('svgLayer');
@@ -698,9 +794,72 @@
         const nodeSettings = document.getElementById('nodeSettings');
         const hwrModeBtn = document.getElementById('hwrModeBtn');
         const modeBanner = document.getElementById('modeBanner');
+        const zoomBadge = document.getElementById('zoomBadge');
+
+        // Setup Zoom and Pan
+        workspace.addEventListener('mousedown', (e) => {
+            if (e.target === workspace || e.target === panZoomContainer || e.target === canvas || e.target === svgLayer) {
+                isPanning = true;
+                workspace.style.cursor = 'grabbing';
+                startX = e.clientX - panX;
+                startY = e.clientY - panY;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateWorkspaceTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isPanning = false;
+            workspace.style.cursor = 'grab';
+        });
+
+        workspace.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomIntensity = 0.05;
+            const mouseX = e.clientX - workspace.getBoundingClientRect().left;
+            const mouseY = e.clientY - workspace.getBoundingClientRect().top;
+
+            // Coordinates in container before zoom
+            const containerX = (mouseX - panX) / scale;
+            const containerY = (mouseY - panY) / scale;
+
+            if (e.deltaY < 0) {
+                scale += zoomIntensity;
+            } else {
+                scale -= zoomIntensity;
+            }
+            scale = Math.min(Math.max(0.2, scale), 2.5); // Bound scale between 20% and 250%
+
+            // Recalculate pan to keep cursor focused
+            panX = mouseX - containerX * scale;
+            panY = mouseY - containerY * scale;
+
+            updateWorkspaceTransform();
+        });
+
+        function updateWorkspaceTransform() {
+            panZoomContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            zoomBadge.innerText = `Zoom: ${Math.round(scale * 100)}%`;
+        }
+
+        function recenterToInlet() {
+            const root = nodes.find(n => n.parentId === null);
+            if (!root) return;
+            // Center the inlet node in the middle of the viewport
+            scale = 0.85;
+            panX = (workspace.clientWidth / 2) - (root.x * scale) - (25 * scale);
+            panY = (workspace.clientHeight / 2) - (root.y * scale) - (25 * scale);
+            updateWorkspaceTransform();
+        }
 
         function init() {
             resetCanvas();
+            recenterToInlet();
         }
 
         function resetCanvas() {
@@ -718,21 +877,16 @@
             arrowControls.style.display = 'none';
             nodeSettings.style.visibility = 'hidden';
 
-            // Reset view toggles to standard defaults
+            // Reset toggles
             document.getElementById('showNonHwrNodes').checked = true;
             document.getElementById('showSupplyPipes').checked = true;
             document.getElementById('showSupplyBoxes').checked = true;
             document.getElementById('showHwrInfo').checked = true;
 
-            // Create initial root node (Inlet)
-            createNode(1500, 1500, null, 0, 0, 0, 0, true); 
+            // Create initial Root Node (Inlet at map center)
+            createNode(2500, 2500, null, 0, 0, 0, 0, true); 
             recalculateAndRender();
-
-            // Center scroll container
-            setTimeout(() => {
-                workspace.scrollLeft = 1500 - workspace.clientWidth / 2 + 25;
-                workspace.scrollTop = 1500 - workspace.clientHeight / 2 + 25;
-            }, 50);
+            updateWorkspaceTransform();
         }
 
         function resetHwrOnly() {
@@ -771,6 +925,11 @@
                 cwGpmOverride: cwGpmOverride,
                 hwGpmOverride: hwGpmOverride,
                 isOrg: isOrg,
+                // Local Hydraulic settings
+                maxLoss: 10,
+                maxVel: 5,
+                cFactor: 130,
+                // Calculated metrics
                 cumulativeCwWfu: 0,
                 cumulativeHwWfu: 0,
                 computedCwGpm: 0,
@@ -815,8 +974,13 @@
 
             nodeSettings.style.visibility = 'visible';
             
+            // Set Node configuration inputs
+            document.getElementById('nodeMaxLoss').value = node.maxLoss;
+            document.getElementById('nodeMaxVel').value = node.maxVel;
+            document.getElementById('nodeCFactor').value = node.cFactor;
+
             if (node.parentId === null) {
-                document.getElementById('selectedNodeLabel').innerText = `Inlet (Org Only)`;
+                document.getElementById('selectedNodeLabel').innerText = `Inlet Node`;
                 document.getElementById('orgCheckboxContainer').style.display = 'none';
                 document.getElementById('insertNodeBtn').style.display = 'none';
                 document.getElementById('cwInputsGroup').style.visibility = 'hidden';
@@ -932,15 +1096,23 @@
         function updateNodeParams() {
             if (!selectedNodeId) return;
             const node = nodes.find(n => n.id === selectedNodeId);
-            if (node && !node.isOrg && node.parentId !== null) {
-                node.cwWfu = parseFloat(document.getElementById('cwWfuInput').value) || 0;
-                node.hwWfu = parseFloat(document.getElementById('hwWfuInput').value) || 0;
-                node.cwGpmOverride = parseFloat(document.getElementById('cwGpmOverrideInput').value) || 0;
-                node.hwGpmOverride = parseFloat(document.getElementById('hwGpmOverrideInput').value) || 0;
+            if (node) {
+                // Update universal hydraulic requirements
+                node.maxLoss = parseFloat(document.getElementById('nodeMaxLoss').value) || 10;
+                node.maxVel = parseFloat(document.getElementById('nodeMaxVel').value) || 5;
+                node.cFactor = parseFloat(document.getElementById('nodeCFactor').value) || 130;
+
+                if (!node.isOrg && node.parentId !== null) {
+                    node.cwWfu = parseFloat(document.getElementById('cwWfuInput').value) || 0;
+                    node.hwWfu = parseFloat(document.getElementById('hwWfuInput').value) || 0;
+                    node.cwGpmOverride = parseFloat(document.getElementById('cwGpmOverrideInput').value) || 0;
+                    node.hwGpmOverride = parseFloat(document.getElementById('hwGpmOverrideInput').value) || 0;
+                }
                 recalculateAndRender();
             }
         }
 
+        // Cumulative demand subtree solver
         function getSubtreeDemand(nodeId) {
             const node = nodes.find(n => n.id === nodeId);
             if (!node) return { wfuCw: 0, wfuHw: 0, gpmCw: 0, gpmHw: 0, cwOverridden: false, hwOverridden: false };
@@ -1010,10 +1182,9 @@
             const showSupplyPipes = document.getElementById('showSupplyPipes').checked;
             const showSupplyBoxes = document.getElementById('showSupplyBoxes').checked;
             
-            // Force showing HWR features if editing mode is active
             const showHwrInfo = isHwrMode || document.getElementById('showHwrInfo').checked;
 
-            // 1. Draw HWR custom-routed lines (if visible)
+            // 1. Draw HWR return loop path (in background layout)
             if (showHwrInfo && hwrPath.length > 1) {
                 for (let i = 0; i < hwrPath.length - 1; i++) {
                     const nodeA = nodes.find(n => n.id === hwrPath[i]);
@@ -1032,7 +1203,7 @@
                 }
             }
 
-            // 2. Draw Nodes and Supply lines
+            // 2. Draw Nodes & Supply Pipelines
             nodes.forEach(node => {
                 const hwrIdx = hwrPath.indexOf(node.id);
                 const isHwrNode = hwrIdx !== -1;
@@ -1066,30 +1237,28 @@
                     `;
                 }
 
+                // Append HWR loop detail cards if node matches return layout
+                if (showHwrBadgeAndBox) {
+                    const hwrGpmAtNode = (hwrIdx + 1) * 0.5;
+                    const hwrSizeAtNode = getHwrPipeSize(hwrGpmAtNode);
+
+                    const labelNode = document.createElement('div');
+                    labelNode.className = 'hwr-node-label';
+                    labelNode.innerHTML = `
+                        <b>HWR #${hwrIdx + 1}</b><br>
+                        ${hwrGpmAtNode.toFixed(1)} GPM<br>
+                        Size: ${hwrSizeAtNode}
+                    `;
+                    nodeEl.appendChild(labelNode);
+                }
+
                 nodeEl.onclick = (e) => {
                     e.stopPropagation();
                     selectNode(node.id);
                 };
                 nodesContainer.appendChild(nodeEl);
 
-                // 3. Render HWR Details box outside the node's DOM tree so it stays above all nodes
-                if (showHwrBadgeAndBox) {
-                    const hwrGpmAtNode = (hwrIdx + 1) * 0.5;
-                    const hwrSizeAtNode = getHwrPipeSize(hwrGpmAtNode);
-
-                    const hwrLabel = document.createElement('div');
-                    hwrLabel.className = 'hwr-node-label';
-                    hwrLabel.style.left = `${node.x + 55}px`;
-                    hwrLabel.style.top = `${node.y - 5}px`;
-                    hwrLabel.innerHTML = `
-                        <b>HWR #${hwrIdx + 1}</b><br>
-                        ${hwrGpmAtNode.toFixed(1)} GPM<br>
-                        Size: ${hwrSizeAtNode}
-                    `;
-                    pipeLabelsContainer.appendChild(hwrLabel);
-                }
-
-                // Supply lines & Pipe boxes logic
+                // Build supply pipes connection to Parent
                 if (node.parentId !== null) {
                     const parentNode = nodes.find(n => n.id === node.parentId);
                     const isParentVisible = parentNode && (parentNode.parentId === null || showNonHwrNodes || hwrPath.indexOf(parentNode.id) !== -1);
@@ -1110,7 +1279,7 @@
                         line.setAttribute('marker-end', 'url(#arrow-cw)');
                         svgLayer.appendChild(line);
 
-                        // Overlay labels box for the water supply pipelines
+                        // Draw Pipe details box overlay
                         if (showSupplyBoxes) {
                             const midX = (x1 + x2) / 2;
                             const midY = (y1 + y2) / 2;
@@ -1122,22 +1291,28 @@
 
                             const cwGpmVal = node.computedCwGpm;
                             const hwGpmVal = node.computedHwGpm;
-                            const cwSize = getPipeSize(cwGpmVal);
-                            const hwSize = getPipeSize(hwGpmVal);
+
+                            // Calculate sizes with local sizing parameters
+                            const cwSizing = calculateHydraulicPipeSize(cwGpmVal, node.maxLoss, node.maxVel, node.cFactor);
+                            const hwSizing = calculateHydraulicPipeSize(hwGpmVal, node.maxLoss, node.maxVel, node.cFactor);
 
                             const cwDetail = node.cwOverridden 
                                 ? `<span class="override-tag">Override: ${cwGpmVal.toFixed(1)} GPM</span>` 
-                                : `<span class="flow-demand">${node.cumulativeCwWfu} WFU (${cwGpmVal.toFixed(1)} GPM)</span>`;
+                                : `<span class="flow-demand">${node.cumulativeCwWfu.toFixed(1)} WFU (${cwGpmVal.toFixed(1)} GPM)</span>`;
                             
                             const hwDetail = node.hwOverridden 
                                 ? `<span class="override-tag">Override: ${hwGpmVal.toFixed(1)} GPM</span>` 
-                                : `<span class="flow-demand">${node.cumulativeHwWfu} WFU (${hwGpmVal.toFixed(1)} GPM)</span>`;
+                                : `<span class="flow-demand">${node.cumulativeHwWfu.toFixed(1)} WFU (${hwGpmVal.toFixed(1)} GPM)</span>`;
 
                             const labelHtml = `
                                 <div class="pipe-label">
                                     <div style="margin-bottom: 2px;">${cwDetail}</div>
                                     <div style="margin-bottom: 4px;">${hwDetail}</div>
-                                    <span class="cw">CW: ${cwSize}</span> | <span class="hw">HW: ${hwSize}</span>
+                                    <span class="cw">CW: ${cwSizing.size}</span> | <span class="hw">HW: ${hwSizing.size}</span>
+                                    <div class="hydraulics-tag">
+                                        CW: ${cwSizing.velocity.toFixed(1)}fps, ${cwSizing.headLoss.toFixed(1)}ft/100'<br>
+                                        HW: ${hwSizing.velocity.toFixed(1)}fps, ${hwSizing.headLoss.toFixed(1)}ft/100'
+                                    </div>
                                 </div>
                             `;
 
@@ -1162,75 +1337,9 @@
             });
         }
 
-        // Print & PDF layout configuration
-        function printDiagram() {
-            deselectActiveNode();
-
-            // 1. Calculate boundaries of our riser diagram
-            if (nodes.length === 0) return;
-            let minX = Infinity, maxX = -Infinity;
-            let minY = Infinity, maxY = -Infinity;
-
-            nodes.forEach(n => {
-                // Determine visibility limits
-                const isHwrNode = hwrPath.indexOf(n.id) !== -1;
-                const showNonHwrNodes = document.getElementById('showNonHwrNodes').checked;
-
-                if (showNonHwrNodes || isHwrNode || n.parentId === null) {
-                    minX = Math.min(minX, n.x);
-                    maxX = Math.max(maxX, n.x);
-                    minY = Math.min(minY, n.y);
-                    maxY = Math.max(maxY, n.y);
-                }
-            });
-
-            // Fallback defaults
-            if (minX === Infinity) { minX = 1400; maxX = 1600; minY = 1400; maxY = 1600; }
-
-            // Apply safety margins (180px) to capture side boxes
-            const padding = 180;
-            const printWidth = (maxX - minX) + (padding * 2);
-            const printHeight = (maxY - minY) + (padding * 2);
-
-            // Store styles for recovery
-            const originalCanvasWidth = canvas.style.width;
-            const originalCanvasHeight = canvas.style.height;
-            const originalCanvasTransform = canvas.style.transform;
-            const originalCanvasTop = canvas.style.top;
-            const originalCanvasLeft = canvas.style.left;
-
-            // Crop canvas coordinates to capture only the diagram contents
-            canvas.style.width = `${printWidth}px`;
-            canvas.style.height = `${printHeight}px`;
-            canvas.style.left = `0px`;
-            canvas.style.top = `0px`;
-
-            // Offset all elements dynamically to scale fit the PDF canvas
-            const elementsToShift = [nodesContainer, pipeLabelsContainer, svgLayer];
-            const shiftX = -(minX - padding);
-            const shiftY = -(minY - padding);
-
-            elementsToShift.forEach(el => {
-                el.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
-            });
-
-            // 2. Trigger System Print Layout
-            window.print();
-
-            // 3. Restore Workspace back to original state
-            canvas.style.width = originalCanvasWidth;
-            canvas.style.height = originalCanvasHeight;
-            canvas.style.left = originalCanvasLeft;
-            canvas.style.top = originalCanvasTop;
-
-            elementsToShift.forEach(el => {
-                el.style.transform = '';
-            });
-        }
-
-        // Global workspace body click listener
+        // Global deselect wrapper
         workspace.onclick = (e) => {
-            if (!isHwrMode) {
+            if (!isHwrMode && !isPanning) {
                 deselectActiveNode();
             }
         };
