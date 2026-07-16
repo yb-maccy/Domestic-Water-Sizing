@@ -50,7 +50,7 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            max-width: 1350px;
+            max-width: 1400px;
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
@@ -136,52 +136,41 @@
             padding: 12px 20px;
             border-radius: 8px;
             border: 1px solid var(--border);
-            min-height: 72px;
+            min-height: 80px;
         }
 
         .settings-meta {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             min-width: 140px;
         }
 
         .settings-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
             border-left: 1px solid var(--border);
             padding-left: 15px;
-            width: 160px;
+            width: auto;
             visibility: visible; 
-        }
-
-        .hydraulic-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            justify-content: center;
-            border-left: 1.5px dashed var(--accent);
-            padding-left: 15px;
-            width: 190px;
         }
 
         .input-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
         }
 
         .node-settings label {
             font-size: 11px;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .node-settings input {
-            width: 65px;
             background: #111827;
             border: 1px solid var(--border);
             color: white;
@@ -189,6 +178,24 @@
             border-radius: 4px;
             text-align: center;
             font-size: 11px;
+        }
+
+        .node-settings input[type="number"] {
+            width: 50px;
+        }
+
+        .node-settings input[type="text"] {
+            width: 80px;
+        }
+
+        /* Remove arrows/spinners from number inputs globally */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
         }
 
         .checkbox-container {
@@ -266,25 +273,27 @@
             z-index: 1;
         }
 
-        /* Node Styling - z-index kept lower than labels */
+        /* Node Styling */
         .node {
+            box-sizing: border-box;
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 76px;
+            height: 76px;
             background: #2563eb;
             border: 3px solid #60a5fa;
             border-radius: 50%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 11px;
             color: white;
             cursor: pointer;
             z-index: 10;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             transition: transform 0.1s, box-shadow 0.1s;
             text-align: center;
+            overflow: visible;
         }
 
         .node:hover {
@@ -367,11 +376,11 @@
             border-radius: 50%;
         }
 
-        /* Pipe flow labels - RENDERS ABOVE NODES */
+        /* Pipe flow labels */
         .pipe-label-wrapper {
             position: absolute;
             transform: translate(-50%, -50%);
-            z-index: 40; /* Higher than .node (10) and .hwr-node-label (30) */
+            z-index: 40; 
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -388,7 +397,7 @@
             white-space: nowrap;
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             text-align: center;
-            pointer-events: auto; /* Clickable if needed */
+            pointer-events: auto; 
         }
 
         .pipe-label .cw { color: var(--cw-color); font-weight: bold; }
@@ -427,10 +436,10 @@
             display: none;
         }
 
-        /* HWR Node Overlay label - RENDERS ABOVE NODES */
+        /* HWR Node Overlay label */
         .hwr-node-label {
             position: absolute;
-            left: 55px;
+            left: 80px;
             top: -5px;
             background: rgba(17, 24, 39, 0.95);
             border: 1px solid var(--hwr-color);
@@ -440,7 +449,7 @@
             font-size: 10px;
             white-space: nowrap;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-            z-index: 30; /* Higher than .node (10) */
+            z-index: 30; 
             text-align: left;
             line-height: 1.3;
             pointer-events: none;
@@ -470,7 +479,7 @@
 
     <header>
         <h1>Interactive Water Riser Diagram Designer</h1>
-        <p>Dynamic Hazen-Williams Type L Copper Sizing • Unlimited Workspace with Pan & Zoom</p>
+        <p>Hazen-Williams Type L Copper Sizing</p>
     </header>
 
     <div class="container">
@@ -481,7 +490,7 @@
                     <button class="btn btn-danger" onclick="resetCanvas()">Reset All</button>
                     <button class="btn btn-hwr" onclick="toggleHwrMode()" id="hwrModeBtn">Design HWR Path</button>
                     <button class="btn btn-danger" style="background-color: #78350f;" onclick="resetHwrOnly()">Reset HWR Only</button>
-                    <button class="btn btn-nav" onclick="recenterToInlet()">Center to Inlet</button>
+                    <button class="btn btn-nav" onclick="recenterToSource()">Center to Source</button>
                     
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <label for="systemType" style="font-weight: 600; font-size: 13px; color: var(--text-muted);">Curve:</label>
@@ -496,48 +505,53 @@
                     <div class="settings-meta">
                         <span id="selectedNodeLabel" style="font-weight: bold; color: #34d399; font-size: 13px;">Node 1</span>
                         <label class="checkbox-container" id="orgCheckboxContainer">
-                            <input type="checkbox" id="isOrgNode" onchange="toggleOrgNode()"> Org Node (No flow)
+                            <input type="checkbox" id="isOrgNode" onchange="toggleOrgNode()"> Org Node
                         </label>
-                        <button class="btn" id="insertNodeBtn" style="padding: 4px 8px; font-size: 10px; background: #4f46e5;" onclick="insertNodeBeforeSelected()">Insert Node Before</button>
+                        <div id="orgLabelContainer" class="input-row" style="margin-top: 2px;">
+                            <label for="nodeLabelText">Text Label:</label>
+                            <input type="text" id="nodeLabelText" placeholder="Label text" oninput="updateNodeParams()">
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <button class="btn" id="insertNodeBtn" style="padding: 4px 8px; font-size: 10px; background: #4f46e5;" onclick="insertNodeBeforeSelected()">Insert Before</button>
+                            <button class="btn btn-danger" id="deleteNodeBtn" style="padding: 4px 8px; font-size: 10px;" onclick="deleteSelectedNode()">Delete Node</button>
+                        </div>
                     </div>
                     
-                    <!-- CW inputs -->
+                    <!-- CW inputs Group -->
                     <div class="settings-group" id="cwInputsGroup">
-                        <div class="input-row">
-                            <label for="cwWfuInput" style="color: var(--cw-color);">CW WFU:</label>
+                        <div style="font-weight: bold; font-size: 11px; color: var(--cw-color); border-bottom: 1px dashed var(--border); padding-bottom: 2px;">Cold Water</div>
+                        <div class="input-row" id="cwDemandRow">
+                            <label for="cwWfuInput">CW WFU:</label>
                             <input type="number" id="cwWfuInput" min="0" step="0.5" value="0" oninput="updateNodeParams()">
-                        </div>
-                        <div class="input-row">
-                            <label for="cwGpmOverrideInput" style="color: var(--cw-color);">CW GPM Ovr:</label>
+                            <label for="cwGpmOverrideInput">GPM Ovr:</label>
                             <input type="number" id="cwGpmOverrideInput" min="0" step="0.5" value="0" placeholder="Off" oninput="updateNodeParams()">
                         </div>
+                        <div class="input-row">
+                            <label for="cwMaxLoss">Max Loss/100':</label>
+                            <input type="number" id="cwMaxLoss" min="0.1" step="0.1" value="10" oninput="updateNodeParams()">
+                            <label for="cwMaxVel">Max Velocity (fps):</label>
+                            <input type="number" id="cwMaxVel" min="0.1" step="0.1" value="5" oninput="updateNodeParams()">
+                            <label for="cwCFactor">C-Factor:</label>
+                            <input type="number" id="cwCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
+                        </div>
                     </div>
 
-                    <!-- HW inputs -->
+                    <!-- HW inputs Group -->
                     <div class="settings-group" id="hwInputsGroup">
-                        <div class="input-row">
-                            <label for="hwWfuInput" style="color: var(--hw-color);">HW WFU:</label>
+                        <div style="font-weight: bold; font-size: 11px; color: var(--hw-color); border-bottom: 1px dashed var(--border); padding-bottom: 2px;">Hot Water</div>
+                        <div class="input-row" id="hwDemandRow">
+                            <label for="hwWfuInput">HW WFU:</label>
                             <input type="number" id="hwWfuInput" min="0" step="0.5" value="0" oninput="updateNodeParams()">
-                        </div>
-                        <div class="input-row">
-                            <label for="hwGpmOverrideInput" style="color: var(--hw-color);">HW GPM Ovr:</label>
+                            <label for="hwGpmOverrideInput">GPM Ovr:</label>
                             <input type="number" id="hwGpmOverrideInput" min="0" step="0.5" value="0" placeholder="Off" oninput="updateNodeParams()">
                         </div>
-                    </div>
-
-                    <!-- Upstream Connection Hydraulics (Fitted on ALL nodes) -->
-                    <div class="hydraulic-group" id="hydraulicsGroup">
                         <div class="input-row">
-                            <label for="nodeMaxLoss" style="color: #10b981;">Max Loss / 100':</label>
-                            <input type="number" id="nodeMaxLoss" min="0.1" step="0.1" value="10" oninput="updateNodeParams()">
-                        </div>
-                        <div class="input-row">
-                            <label for="nodeMaxVel" style="color: #10b981;">Max Velocity (fps):</label>
-                            <input type="number" id="nodeMaxVel" min="0.1" step="0.1" value="5" oninput="updateNodeParams()">
-                        </div>
-                        <div class="input-row">
-                            <label for="nodeCFactor" style="color: #10b981;">C-Factor:</label>
-                            <input type="number" id="nodeCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
+                            <label for="hwMaxLoss">Max Loss/100':</label>
+                            <input type="number" id="hwMaxLoss" min="0.1" step="0.1" value="10" oninput="updateNodeParams()">
+                            <label for="hwMaxVel">Max Velocity (fps):</label>
+                            <input type="number" id="hwMaxVel" min="0.1" step="0.1" value="5" oninput="updateNodeParams()">
+                            <label for="hwCFactor">C-Factor:</label>
+                            <input type="number" id="hwCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
                         </div>
                     </div>
                 </div>
@@ -557,7 +571,10 @@
                 <label class="toggle-item">
                     <input type="checkbox" id="showHwrInfo" checked onchange="recalculateAndRender()"> Show Hot Water Return
                 </label>
-                <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Drag canvas to Pan • Scroll wheel to Zoom</span>
+                <label class="toggle-item" style="color: #60a5fa; font-weight: bold;">
+                    <input type="checkbox" id="preventSizeDecrease" checked onchange="recalculateAndRender()"> Pipe Size Cannot Decrease
+                </label>
+                <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Drag canvas to Pan • Scroll wheel to Zoom • Press Delete key to delete selection</span>
             </div>
         </div>
 
@@ -571,10 +588,10 @@
                     <!-- SVG layer for pipelines -->
                     <svg class="pipe-layer" id="svgLayer">
                         <defs>
-                            <marker id="arrow-cw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <marker id="arrow-cw" viewBox="0 0 10 10" refX="41" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                                 <path d="M 0 1 L 10 5 L 0 9 z" fill="#60a5fa" />
                             </marker>
-                            <marker id="arrow-hw" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <marker id="arrow-hw" viewBox="0 0 10 10" refX="41" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                                 <path d="M 0 1 L 10 5 L 0 9 z" fill="#f87171" />
                             </marker>
                         </defs>
@@ -601,7 +618,7 @@
         <div class="legend">
             <div class="legend-item">
                 <span class="legend-color" style="background: #8b5cf6;"></span>
-                <span>Inlet (Always Org)</span>
+                <span>Source (Always Org)</span>
             </div>
             <div class="legend-item">
                 <span class="legend-circle" style="background: var(--org-color); border: 2px solid #9ca3af;"></span>
@@ -639,23 +656,25 @@
             { nominal: '8"', id: 7.725 }
         ];
 
-        // HWR loop standard lookup sizes (1/2" up to 8")
+        // Map nominal text to index for easy comparison
+        const copperSizeMap = {};
+        copperTypeL.forEach((size, idx) => {
+            copperSizeMap[size.nominal] = idx;
+        });
+
+        // HWR loop custom lookup table (Pruned to size limit, max sizes above 3" removed)
         const hwrSizingTable = [
-            { maxGpm: 5.0, size: '1/2"' },
-            { maxGpm: 10.0, size: '3/4"' },
-            { maxGpm: 22.0, size: '1"' },
-            { maxGpm: 39.0, size: '1-1/4"' },
-            { maxGpm: 55.0, size: '1-1/2"' },
-            { maxGpm: 110.0, size: '2"' },
-            { maxGpm: 175.0, size: '2-1/2"' },
-            { maxGpm: 280.0, size: '3"' },
-            { maxGpm: 600.0, size: '4"' },
-            { maxGpm: 1000.0, size: '5"' },
-            { maxGpm: 1500.0, size: '6"' },
-            { maxGpm: 3000.0, size: '8"' }
+            { maxGpm: 3.5, size: '1/2"' },
+            { maxGpm: 7.5, size: '3/4"' },
+            { maxGpm: 12.5, size: '1"' },
+            { maxGpm: 19.5, size: '1-1/4"' },
+            { maxGpm: 27.5, size: '1-1/2"' },
+            { maxGpm: 48.0, size: '2"' },
+            { maxGpm: 74.0, size: '2-1/2"' },
+            { maxGpm: 106.0, size: '3"' }
         ];
 
-        // Your custom Flush Tank & Flush Valve tables
+        // Flush Tank & Flush Valve tables
         const tankWfuGpm = [
             {wfu: 0, gpm: 0}, {wfu: 1, gpm: 3}, {wfu: 3, gpm: 5}, {wfu: 4, gpm: 8}, {wfu: 5, gpm: 9.4}, 
             {wfu: 6, gpm: 9.4}, {wfu: 7, gpm: 11.8}, {wfu: 8, gpm: 12.8}, {wfu: 9, gpm: 13.7}, {wfu: 10, gpm: 14.6}, 
@@ -714,7 +733,6 @@
         // Linear interpolation helper
         function interpolateWfu(wfu, lookupTable) {
             if (wfu <= 0) return 0;
-            // Check boundaries
             if (wfu <= lookupTable[0].wfu) return lookupTable[0].gpm;
             if (wfu >= lookupTable[lookupTable.length - 1].wfu) return lookupTable[lookupTable.length - 1].gpm;
 
@@ -740,11 +758,11 @@
 
         // Hazen-Williams Head Loss and Velocity Pipe Sizing calculation
         function calculateHydraulicPipeSize(gpm, maxLoss, maxVel, cFactor) {
-            if (gpm <= 0) return { size: 'N/A', velocity: 0, headLoss: 0 };
+            if (gpm <= 0) return { size: 'N/A', velocity: 0, headLoss: 0, index: -1 };
             
             for (let i = 0; i < copperTypeL.length; i++) {
                 const pipe = copperTypeL[i];
-                const d = pipe.id; // Inside diameter in inches
+                const d = pipe.id; 
                 
                 // Velocity in feet per second (fps)
                 const v = 0.4085 * (gpm / (d * d));
@@ -753,10 +771,10 @@
                 const h100 = 0.2083 * Math.pow(100 / cFactor, 1.85) * (Math.pow(gpm, 1.85) / Math.pow(d, 4.8655));
 
                 if (v <= maxVel && h100 <= maxLoss) {
-                    return { size: pipe.nominal, velocity: v, headLoss: h100 };
+                    return { size: pipe.nominal, velocity: v, headLoss: h100, index: i };
                 }
             }
-            return { size: '8"+', velocity: 999, headLoss: 999 };
+            return { size: 'N/A', velocity: 999, headLoss: 999, index: copperTypeL.length };
         }
 
         function getHwrPipeSize(gpm) {
@@ -764,14 +782,17 @@
             for (let bracket of hwrSizingTable) {
                 if (gpm <= bracket.maxGpm) return bracket.size;
             }
-            return '8"+';
+            return 'N/A';
         }
 
         // State variables
         let nodes = [];
         let selectedNodeId = null;
         let nodeCounter = 0;
-        const gridSpacing = 160; 
+        
+        // Asymmetrical Grid Spacing Config
+        const gridSpacingY = 160; 
+        const gridSpacingX = 240; // 1.5x wider horizontal grid spacing
 
         // HWR System state
         let isHwrMode = false;
@@ -824,7 +845,6 @@
             const mouseX = e.clientX - workspace.getBoundingClientRect().left;
             const mouseY = e.clientY - workspace.getBoundingClientRect().top;
 
-            // Coordinates in container before zoom
             const containerX = (mouseX - panX) / scale;
             const containerY = (mouseY - panY) / scale;
 
@@ -833,33 +853,78 @@
             } else {
                 scale -= zoomIntensity;
             }
-            scale = Math.min(Math.max(0.2, scale), 2.5); // Bound scale between 20% and 250%
+            scale = Math.min(Math.max(0.2, scale), 2.5);
 
-            // Recalculate pan to keep cursor focused
             panX = mouseX - containerX * scale;
             panY = mouseY - containerY * scale;
 
             updateWorkspaceTransform();
         });
 
+        // Keybindings
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') {
+                return;
+            }
+
+            if (selectedNodeId !== null) {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    addNode('up');
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    addNode('down');
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    addNode('left');
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    addNode('right');
+                } else if (e.key.toLowerCase() === 'o') {
+                    e.preventDefault();
+                    convertSelectedNode(true);
+                } else if (e.key.toLowerCase() === 'p') {
+                    e.preventDefault();
+                    convertSelectedNode(false);
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault();
+                    deleteSelectedNode();
+                }
+            }
+        });
+
+        function convertSelectedNode(convertToOrg) {
+            const node = nodes.find(n => n.id === selectedNodeId);
+            if (node && node.parentId !== null) {
+                node.isOrg = convertToOrg;
+                if (convertToOrg) {
+                    node.cwWfu = 0;
+                    node.hwWfu = 0;
+                    node.cwGpmOverride = 0;
+                    node.hwGpmOverride = 0;
+                }
+                recalculateAndRender();
+                selectNode(node.id);
+            }
+        }
+
         function updateWorkspaceTransform() {
             panZoomContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
             zoomBadge.innerText = `Zoom: ${Math.round(scale * 100)}%`;
         }
 
-        function recenterToInlet() {
+        function recenterToSource() {
             const root = nodes.find(n => n.parentId === null);
             if (!root) return;
-            // Center the inlet node in the middle of the viewport
             scale = 0.85;
-            panX = (workspace.clientWidth / 2) - (root.x * scale) - (25 * scale);
-            panY = (workspace.clientHeight / 2) - (root.y * scale) - (25 * scale);
+            panX = (workspace.clientWidth / 2) - (root.x * scale) - (38 * scale);
+            panY = (workspace.clientHeight / 2) - (root.y * scale) - (38 * scale);
             updateWorkspaceTransform();
         }
 
         function init() {
             resetCanvas();
-            recenterToInlet();
+            recenterToSource();
         }
 
         function resetCanvas() {
@@ -877,13 +942,12 @@
             arrowControls.style.display = 'none';
             nodeSettings.style.visibility = 'hidden';
 
-            // Reset toggles
             document.getElementById('showNonHwrNodes').checked = true;
             document.getElementById('showSupplyPipes').checked = true;
             document.getElementById('showSupplyBoxes').checked = true;
             document.getElementById('showHwrInfo').checked = true;
+            document.getElementById('preventSizeDecrease').checked = true;
 
-            // Create initial Root Node (Inlet at map center)
             createNode(2500, 2500, null, 0, 0, 0, 0, true); 
             recalculateAndRender();
             updateWorkspaceTransform();
@@ -925,17 +989,22 @@
                 cwGpmOverride: cwGpmOverride,
                 hwGpmOverride: hwGpmOverride,
                 isOrg: isOrg,
-                // Local Hydraulic settings
-                maxLoss: 10,
-                maxVel: 5,
-                cFactor: 130,
-                // Calculated metrics
+                labelText: "",
+                cwMaxLoss: 10,
+                cwMaxVel: 5,
+                cwCFactor: 130,
+                hwMaxLoss: 10,
+                hwMaxVel: 5,
+                hwCFactor: 130,
                 cumulativeCwWfu: 0,
                 cumulativeHwWfu: 0,
                 computedCwGpm: 0,
                 computedHwGpm: 0,
                 cwOverridden: false,
-                hwOverridden: false
+                hwOverridden: false,
+                // Calculated final sized variables
+                cwFinalSizeIdx: -1,
+                hwFinalSizeIdx: -1
             };
             nodes.push(node);
             return node;
@@ -974,31 +1043,43 @@
 
             nodeSettings.style.visibility = 'visible';
             
-            // Set Node configuration inputs
-            document.getElementById('nodeMaxLoss').value = node.maxLoss;
-            document.getElementById('nodeMaxVel').value = node.maxVel;
-            document.getElementById('nodeCFactor').value = node.cFactor;
+            document.getElementById('cwMaxLoss').value = node.cwMaxLoss;
+            document.getElementById('cwMaxVel').value = node.cwMaxVel;
+            document.getElementById('cwCFactor').value = node.cwCFactor;
+
+            document.getElementById('hwMaxLoss').value = node.hwMaxLoss;
+            document.getElementById('hwMaxVel').value = node.hwMaxVel;
+            document.getElementById('hwCFactor').value = node.hwCFactor;
+
+            document.getElementById('nodeLabelText').value = node.labelText || "";
 
             if (node.parentId === null) {
-                document.getElementById('selectedNodeLabel').innerText = `Inlet Node`;
+                document.getElementById('selectedNodeLabel').innerText = `Source Node`;
                 document.getElementById('orgCheckboxContainer').style.display = 'none';
+                document.getElementById('orgLabelContainer').style.display = 'none';
                 document.getElementById('insertNodeBtn').style.display = 'none';
+                document.getElementById('deleteNodeBtn').style.display = 'none';
                 document.getElementById('cwInputsGroup').style.visibility = 'hidden';
                 document.getElementById('hwInputsGroup').style.visibility = 'hidden';
             } else {
                 document.getElementById('selectedNodeLabel').innerText = `Node ${id}`;
                 document.getElementById('orgCheckboxContainer').style.display = 'flex';
+                document.getElementById('orgLabelContainer').style.display = 'flex';
                 document.getElementById('insertNodeBtn').style.display = 'block';
+                document.getElementById('deleteNodeBtn').style.display = 'block';
                 
                 const isOrgCheckbox = document.getElementById('isOrgNode');
                 isOrgCheckbox.checked = node.isOrg;
 
+                document.getElementById('cwInputsGroup').style.visibility = 'visible';
+                document.getElementById('hwInputsGroup').style.visibility = 'visible';
+
                 if (node.isOrg) {
-                    document.getElementById('cwInputsGroup').style.visibility = 'hidden';
-                    document.getElementById('hwInputsGroup').style.visibility = 'hidden';
+                    document.getElementById('cwDemandRow').style.display = 'none';
+                    document.getElementById('hwDemandRow').style.display = 'none';
                 } else {
-                    document.getElementById('cwInputsGroup').style.visibility = 'visible';
-                    document.getElementById('hwInputsGroup').style.visibility = 'visible';
+                    document.getElementById('cwDemandRow').style.display = 'flex';
+                    document.getElementById('hwDemandRow').style.display = 'flex';
                     document.getElementById('cwWfuInput').value = node.cwWfu;
                     document.getElementById('hwWfuInput').value = node.hwWfu;
                     document.getElementById('cwGpmOverrideInput').value = node.cwGpmOverride > 0 ? node.cwGpmOverride : '';
@@ -1006,10 +1087,9 @@
                 }
             }
 
-            // Position control arrows
             arrowControls.style.display = 'grid';
-            arrowControls.style.left = `${node.x + 25 - 57.5}px`;
-            arrowControls.style.top = `${node.y + 25 - 57.5}px`;
+            arrowControls.style.left = `${node.x + 38 - 57.5}px`;
+            arrowControls.style.top = `${node.y + 38 - 57.5}px`;
         }
 
         function deselectActiveNode() {
@@ -1043,10 +1123,10 @@
             let targetX = parent.x;
             let targetY = parent.y;
 
-            if (direction === 'up') targetY -= gridSpacing;
-            if (direction === 'down') targetY += gridSpacing;
-            if (direction === 'left') targetX -= gridSpacing;
-            if (direction === 'right') targetX += gridSpacing;
+            if (direction === 'up') targetY -= gridSpacingY;
+            if (direction === 'down') targetY += gridSpacingY;
+            if (direction === 'left') targetX -= gridSpacingX;
+            if (direction === 'right') targetX += gridSpacingX;
 
             const existingNode = nodes.find(n => n.x === targetX && n.y === targetY);
             if (existingNode) {
@@ -1093,16 +1173,51 @@
             });
         }
 
+        function getDescendantIds(nodeId) {
+            let descendants = [];
+            const children = nodes.filter(n => n.parentId === nodeId);
+            children.forEach(child => {
+                descendants.push(child.id);
+                descendants = descendants.concat(getDescendantIds(child.id));
+            });
+            return descendants;
+        }
+
+        function deleteSelectedNode() {
+            if (selectedNodeId === null) return;
+            const nodeToDelete = nodes.find(n => n.id === selectedNodeId);
+            if (!nodeToDelete) return;
+
+            if (nodeToDelete.parentId === null) {
+                alert("The Source Node cannot be deleted!");
+                return;
+            }
+
+            const descendants = getDescendantIds(selectedNodeId);
+            const targetsToRemove = [selectedNodeId, ...descendants];
+
+            hwrPath = hwrPath.filter(id => !targetsToRemove.includes(id));
+            nodes = nodes.filter(n => !targetsToRemove.includes(n.id));
+
+            deselectActiveNode();
+            recalculateAndRender();
+        }
+
         function updateNodeParams() {
             if (!selectedNodeId) return;
             const node = nodes.find(n => n.id === selectedNodeId);
             if (node) {
-                // Update universal hydraulic requirements
-                node.maxLoss = parseFloat(document.getElementById('nodeMaxLoss').value) || 10;
-                node.maxVel = parseFloat(document.getElementById('nodeMaxVel').value) || 5;
-                node.cFactor = parseFloat(document.getElementById('nodeCFactor').value) || 130;
+                node.cwMaxLoss = parseFloat(document.getElementById('cwMaxLoss').value) || 10;
+                node.cwMaxVel = parseFloat(document.getElementById('cwMaxVel').value) || 5;
+                node.cwCFactor = parseFloat(document.getElementById('cwCFactor').value) || 130;
 
-                if (!node.isOrg && node.parentId !== null) {
+                node.hwMaxLoss = parseFloat(document.getElementById('hwMaxLoss').value) || 10;
+                node.hwMaxVel = parseFloat(document.getElementById('hwMaxVel').value) || 5;
+                node.hwCFactor = parseFloat(document.getElementById('hwCFactor').value) || 130;
+
+                node.labelText = document.getElementById('nodeLabelText').value;
+
+                if (node.parentId !== null) {
                     node.cwWfu = parseFloat(document.getElementById('cwWfuInput').value) || 0;
                     node.hwWfu = parseFloat(document.getElementById('hwWfuInput').value) || 0;
                     node.cwGpmOverride = parseFloat(document.getElementById('cwGpmOverrideInput').value) || 0;
@@ -1112,64 +1227,113 @@
             }
         }
 
-        // Cumulative demand subtree solver
+        // Restructured Demand Gathering
         function getSubtreeDemand(nodeId) {
             const node = nodes.find(n => n.id === nodeId);
             if (!node) return { wfuCw: 0, wfuHw: 0, gpmCw: 0, gpmHw: 0, cwOverridden: false, hwOverridden: false };
 
-            let totalWfuCw = node.isOrg ? 0 : node.cwWfu;
-            let totalWfuHw = node.isOrg ? 0 : node.hwWfu;
-            let totalGpmCw = 0;
-            let totalGpmHw = 0;
+            // Start locally: Convert only local WFUs to GPM
+            const localWfuCw = node.isOrg ? 0 : node.cwWfu;
+            const localWfuHw = node.isOrg ? 0 : node.hwWfu;
+
+            // Resolve local GPM base values (Apply local override if active, else standard WFU to GPM)
+            const cwOverridden = !node.isOrg && node.cwGpmOverride > 0;
+            const localGpmCw = cwOverridden ? node.cwGpmOverride : wfuToGpm(localWfuCw);
+
+            const hwOverridden = !node.isOrg && node.hwGpmOverride > 0;
+            const localGpmHw = hwOverridden ? node.hwGpmOverride : wfuToGpm(localWfuHw);
+
+            // Accumulate GPM recursively from downstream branches
+            let totalGpmCw = localGpmCw;
+            let totalGpmHw = localGpmHw;
+            let totalWfuCw = localWfuCw;
+            let totalWfuHw = localWfuHw;
 
             const children = nodes.filter(n => n.parentId === nodeId);
             children.forEach(child => {
                 const childDemand = getSubtreeDemand(child.id);
-                totalWfuCw += childDemand.wfuCw;
-                totalWfuHw += childDemand.wfuHw;
+                // Child's calculated/propagated GPM flows directly into this node's total
                 totalGpmCw += childDemand.gpmCw;
                 totalGpmHw += childDemand.gpmHw;
+                // Track cumulative pure WFUs for readout boxes (ignores manual overrides)
+                totalWfuCw += childDemand.wfuCw;
+                totalWfuHw += childDemand.wfuHw;
             });
 
-            let finalWfuCw = totalWfuCw;
-            let finalGpmCw = totalGpmCw;
-            let cwOverridden = !node.isOrg && node.cwGpmOverride > 0;
-            if (cwOverridden) {
-                finalWfuCw = 0; 
-                finalGpmCw = node.cwGpmOverride;
-            }
-
-            let finalWfuHw = totalWfuHw;
-            let finalGpmHw = totalGpmHw;
-            let hwOverridden = !node.isOrg && node.hwGpmOverride > 0;
-            if (hwOverridden) {
-                finalWfuHw = 0;
-                finalGpmHw = node.hwGpmOverride;
-            }
-
             return {
-                wfuCw: finalWfuCw,
-                wfuHw: finalWfuHw,
-                gpmCw: finalGpmCw,
-                gpmHw: finalGpmHw,
+                wfuCw: totalWfuCw,
+                wfuHw: totalWfuHw,
+                gpmCw: totalGpmCw,
+                gpmHw: totalGpmHw,
                 cwOverridden: cwOverridden,
                 hwOverridden: hwOverridden
             };
         }
 
+        // Recursive sizing lookup that prevents size decreases upstream (towards root/source)
+        function propagateSizingRestriction() {
+            const rootNode = nodes.find(n => n.parentId === null);
+            if (!rootNode) return;
+
+            // Step 1: Calculate raw local sizes for all nodes
+            nodes.forEach(node => {
+                if (node.parentId !== null) {
+                    const cwRaw = calculateHydraulicPipeSize(node.computedCwGpm, node.cwMaxLoss, node.cwMaxVel, node.cwCFactor);
+                    const hwRaw = calculateHydraulicPipeSize(node.computedHwGpm, node.hwMaxLoss, node.hwMaxVel, node.hwCFactor);
+                    node.cwFinalSizeIdx = cwRaw.index;
+                    node.hwFinalSizeIdx = hwRaw.index;
+                } else {
+                    node.cwFinalSizeIdx = -1;
+                    node.hwFinalSizeIdx = -1;
+                }
+            });
+
+            // If the prevent decrease toggle is active, propagate downstream max sizes back upstream
+            const preventDecrease = document.getElementById('preventSizeDecrease').checked;
+            if (preventDecrease) {
+                // Post-order dynamic programming to pull up maximum sizes of downstream branches
+                function computeMaxSizesForSubtree(nodeId) {
+                    const node = nodes.find(n => n.id === nodeId);
+                    if (!node) return { maxCwIdx: -1, maxHwIdx: -1 };
+
+                    const children = nodes.filter(n => n.parentId === nodeId);
+                    
+                    let maxCwIdx = node.cwFinalSizeIdx;
+                    let maxHwIdx = node.hwFinalSizeIdx;
+
+                    children.forEach(child => {
+                        const childMax = computeMaxSizesForSubtree(child.id);
+                        if (childMax.maxCwIdx > maxCwIdx) maxCwIdx = childMax.maxCwIdx;
+                        if (childMax.maxHwIdx > maxHwIdx) maxHwIdx = childMax.maxHwIdx;
+                    });
+
+                    // Force current segment (going upstream toward parent) to be at least as large as any child segment draining into it
+                    if (node.parentId !== null) {
+                        node.cwFinalSizeIdx = maxCwIdx;
+                        node.hwFinalSizeIdx = maxHwIdx;
+                    }
+
+                    return { maxCwIdx, maxHwIdx };
+                }
+
+                computeMaxSizesForSubtree(rootNode.id);
+            }
+        }
+
         function recalculateAndRender() {
             nodes.forEach(node => {
                 const demand = getSubtreeDemand(node.id);
+                // Store structural values cleanly
                 node.cumulativeCwWfu = demand.wfuCw;
                 node.cumulativeHwWfu = demand.wfuHw;
-                
-                node.computedCwGpm = wfuToGpm(demand.wfuCw) + demand.gpmCw;
-                node.computedHwGpm = wfuToGpm(demand.wfuHw) + demand.gpmHw;
+                node.computedCwGpm = demand.gpmCw;
+                node.computedHwGpm = demand.gpmHw;
                 
                 node.cwOverridden = demand.cwOverridden;
                 node.hwOverridden = demand.hwOverridden;
             });
 
+            propagateSizingRestriction();
             renderDiagram();
         }
 
@@ -1181,20 +1345,18 @@
             const showNonHwrNodes = document.getElementById('showNonHwrNodes').checked;
             const showSupplyPipes = document.getElementById('showSupplyPipes').checked;
             const showSupplyBoxes = document.getElementById('showSupplyBoxes').checked;
-            
             const showHwrInfo = isHwrMode || document.getElementById('showHwrInfo').checked;
 
-            // 1. Draw HWR return loop path (in background layout)
             if (showHwrInfo && hwrPath.length > 1) {
                 for (let i = 0; i < hwrPath.length - 1; i++) {
                     const nodeA = nodes.find(n => n.id === hwrPath[i]);
                     const nodeB = nodes.find(n => n.id === hwrPath[i + 1]);
                     if (nodeA && nodeB) {
                         const hwrLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                        hwrLine.setAttribute('x1', nodeA.x + 25);
-                        hwrLine.setAttribute('y1', nodeA.y + 25);
-                        hwrLine.setAttribute('x2', nodeB.x + 25);
-                        hwrLine.setAttribute('y2', nodeB.y + 25);
+                        hwrLine.setAttribute('x1', nodeA.x + 38);
+                        hwrLine.setAttribute('y1', nodeA.y + 38);
+                        hwrLine.setAttribute('x2', nodeB.x + 38);
+                        hwrLine.setAttribute('y2', nodeB.y + 38);
                         hwrLine.setAttribute('stroke', '#f59e0b');
                         hwrLine.setAttribute('stroke-width', '2.5');
                         hwrLine.setAttribute('stroke-dasharray', '6,6');
@@ -1203,7 +1365,6 @@
                 }
             }
 
-            // 2. Draw Nodes & Supply Pipelines
             nodes.forEach(node => {
                 const hwrIdx = hwrPath.indexOf(node.id);
                 const isHwrNode = hwrIdx !== -1;
@@ -1223,21 +1384,47 @@
                 nodeEl.style.top = `${node.y}px`;
                 nodeEl.dataset.id = node.id;
                 
+                const velocityLossSubtext = `
+                    <div style="color: rgba(255, 255, 255, 0.85); font-size: 7px; border-top: 1px solid rgba(255, 255, 255, 0.2); margin-top: 1px; padding-top: 1px; width: 85%;">
+                        <div>C: ${node.cwMaxVel}fps/${node.cwMaxLoss}'</div>
+                        <div>H: ${node.hwMaxVel}fps/${node.hwMaxLoss}'</div>
+                    </div>
+                `;
+
                 if (node.parentId === null) {
-                    nodeEl.innerHTML = `INLET ${hwrBadge}`;
-                } else if (node.isOrg) {
-                    nodeEl.innerHTML = `${hwrBadge}`; 
-                } else {
                     nodeEl.innerHTML = `
-                        <div style="line-height: 1.1; font-size: 9px; padding: 2px;">
-                            C:${node.cwWfu}<br>
-                            H:${node.hwWfu}
+                        <div style="line-height: 1.1; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%;">
+                            SOURCE
+                        </div>
+                        ${hwrBadge}
+                    `;
+                } else if (node.isOrg) {
+                    const orgDisplayLabel = node.labelText ? node.labelText : '';
+                    nodeEl.innerHTML = `
+                        <div style="line-height: 1.1; font-size: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%;">
+                            <div style="font-weight: 900; max-height: 18px; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; max-width: 68px;">${orgDisplayLabel}</div>
+                            ${velocityLossSubtext}
+                        </div>
+                        ${hwrBadge}
+                    `;
+                } else {
+                    const customLabel = node.labelText ? `<div style="font-weight: 900; font-size: 8px; max-height: 12px; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; max-width: 68px; margin-bottom: 1px;">${node.labelText}</div>` : '';
+                    const cwNodeDisplay = node.cwGpmOverride > 0 ? `C: ${node.cwGpmOverride} GPM` : `C: ${node.cwWfu}`;
+                    const hwNodeDisplay = node.hwGpmOverride > 0 ? `H: ${node.hwGpmOverride} GPM` : `H: ${node.hwWfu}`;
+                    
+                    nodeEl.innerHTML = `
+                        <div style="line-height: 1.05; font-size: 7.5px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%;">
+                            ${customLabel}
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                                <span>${cwNodeDisplay}</span>
+                                <span>${hwNodeDisplay}</span>
+                            </div>
+                            ${velocityLossSubtext}
                         </div>
                         ${hwrBadge}
                     `;
                 }
 
-                // Append HWR loop detail cards if node matches return layout
                 if (showHwrBadgeAndBox) {
                     const hwrGpmAtNode = (hwrIdx + 1) * 0.5;
                     const hwrSizeAtNode = getHwrPipeSize(hwrGpmAtNode);
@@ -1258,17 +1445,16 @@
                 };
                 nodesContainer.appendChild(nodeEl);
 
-                // Build supply pipes connection to Parent
                 if (node.parentId !== null) {
                     const parentNode = nodes.find(n => n.id === node.parentId);
                     const isParentVisible = parentNode && (parentNode.parentId === null || showNonHwrNodes || hwrPath.indexOf(parentNode.id) !== -1);
 
                     if (parentNode && showSupplyPipes && isParentVisible) {
                         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                        const x1 = parentNode.x + 25;
-                        const y1 = parentNode.y + 25;
-                        const x2 = node.x + 25;
-                        const y2 = node.y + 25;
+                        const x1 = parentNode.x + 38;
+                        const y1 = parentNode.y + 38;
+                        const x2 = node.x + 38;
+                        const y2 = node.y + 38;
 
                         line.setAttribute('x1', x1);
                         line.setAttribute('y1', y1);
@@ -1279,7 +1465,6 @@
                         line.setAttribute('marker-end', 'url(#arrow-cw)');
                         svgLayer.appendChild(line);
 
-                        // Draw Pipe details box overlay
                         if (showSupplyBoxes) {
                             const midX = (x1 + x2) / 2;
                             const midY = (y1 + y2) / 2;
@@ -1292,26 +1477,49 @@
                             const cwGpmVal = node.computedCwGpm;
                             const hwGpmVal = node.computedHwGpm;
 
-                            // Calculate sizes with local sizing parameters
-                            const cwSizing = calculateHydraulicPipeSize(cwGpmVal, node.maxLoss, node.maxVel, node.cFactor);
-                            const hwSizing = calculateHydraulicPipeSize(hwGpmVal, node.maxLoss, node.maxVel, node.cFactor);
+                            // Resolve the finalized sizes mapping to copper types indices
+                            const cwSizingIdx = node.cwFinalSizeIdx;
+                            const hwSizingIdx = node.hwFinalSizeIdx;
+
+                            const cwSizingText = (cwSizingIdx >= 0 && cwSizingIdx < copperTypeL.length) ? copperTypeL[cwSizingIdx].nominal : 'N/A';
+                            const hwSizingText = (hwSizingIdx >= 0 && hwSizingIdx < copperTypeL.length) ? copperTypeL[hwSizingIdx].nominal : 'N/A';
+
+                            // Local calculation values strictly for readout metrics (velocities and friction head losses)
+                            const localCwRaw = calculateHydraulicPipeSize(cwGpmVal, node.cwMaxLoss, node.cwMaxVel, node.cwCFactor);
+                            const localHwRaw = calculateHydraulicPipeSize(hwGpmVal, node.hwMaxLoss, node.hwMaxVel, node.hwCFactor);
+
+                            // Dynamically recalculate local velocities and head losses based on the potentially forced oversized diameter
+                            function getEnforcedHydraulics(gpm, finalIdx, cFactor) {
+                                if (gpm <= 0 || finalIdx < 0 || finalIdx >= copperTypeL.length) return { velocity: 0, headLoss: 0 };
+                                const actualIdx = Math.min(finalIdx, copperTypeL.length - 1);
+                                const d = copperTypeL[actualIdx].id;
+                                const v = 0.4085 * (gpm / (d * d));
+                                const h100 = 0.2083 * Math.pow(100 / cFactor, 1.85) * (Math.pow(gpm, 1.85) / Math.pow(d, 4.8655));
+                                return { velocity: v, headLoss: h100 };
+                            }
+
+                            const cwHydraulics = getEnforcedHydraulics(cwGpmVal, cwSizingIdx, node.cwCFactor);
+                            const hwHydraulics = getEnforcedHydraulics(hwGpmVal, hwSizingIdx, node.hwCFactor);
 
                             const cwDetail = node.cwOverridden 
-                                ? `<span class="override-tag">Override: ${cwGpmVal.toFixed(1)} GPM</span>` 
+                                ? `<span class="override-tag">+ ${node.cwGpmOverride.toFixed(1)} GPM</span>` 
                                 : `<span class="flow-demand">${node.cumulativeCwWfu.toFixed(1)} WFU (${cwGpmVal.toFixed(1)} GPM)</span>`;
                             
                             const hwDetail = node.hwOverridden 
-                                ? `<span class="override-tag">Override: ${hwGpmVal.toFixed(1)} GPM</span>` 
+                                ? `<span class="override-tag">+ ${node.hwGpmOverride.toFixed(1)} GPM</span>` 
                                 : `<span class="flow-demand">${node.cumulativeHwWfu.toFixed(1)} WFU (${hwGpmVal.toFixed(1)} GPM)</span>`;
+
+                            const sizeWarningCw = (cwSizingIdx > localCwRaw.index && cwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
+                            const sizeWarningHw = (hwSizingIdx > localHwRaw.index && hwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
 
                             const labelHtml = `
                                 <div class="pipe-label">
                                     <div style="margin-bottom: 2px;">${cwDetail}</div>
                                     <div style="margin-bottom: 4px;">${hwDetail}</div>
-                                    <span class="cw">CW: ${cwSizing.size}</span> | <span class="hw">HW: ${hwSizing.size}</span>
+                                    <span class="cw">CW: ${cwSizingText}${sizeWarningCw}</span> | <span class="hw">HW: ${hwSizingText}${sizeWarningHw}</span>
                                     <div class="hydraulics-tag">
-                                        CW: ${cwSizing.velocity.toFixed(1)}fps, ${cwSizing.headLoss.toFixed(1)}ft/100'<br>
-                                        HW: ${hwSizing.velocity.toFixed(1)}fps, ${hwSizing.headLoss.toFixed(1)}ft/100'
+                                        CW: ${cwHydraulics.velocity.toFixed(1)}fps, ${cwHydraulics.headLoss.toFixed(1)}ft/100'<br>
+                                        HW: ${hwHydraulics.velocity.toFixed(1)}fps, ${hwHydraulics.headLoss.toFixed(1)}ft/100'
                                     </div>
                                 </div>
                             `;
@@ -1337,7 +1545,6 @@
             });
         }
 
-        // Global deselect wrapper
         workspace.onclick = (e) => {
             if (!isHwrMode && !isPanning) {
                 deselectActiveNode();
