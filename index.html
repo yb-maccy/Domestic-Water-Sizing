@@ -170,7 +170,7 @@
             white-space: nowrap;
         }
 
-        .node-settings input {
+        .node-settings input, .node-settings select {
             background: #111827;
             border: 1px solid var(--border);
             color: white;
@@ -521,6 +521,24 @@
                             <label for="cwCFactor">C-Factor:</label>
                             <input type="number" id="cwCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
                         </div>
+                        <div class="input-row">
+                            <label for="cwMinSize">Min Size Override:</label>
+                            <select id="cwMinSize" onchange="updateNodeParams()">
+                                <option value="-1">None</option>
+                                <option value="0">1/2"</option>
+                                <option value="1">3/4"</option>
+                                <option value="2">1"</option>
+                                <option value="3">1-1/4"</option>
+                                <option value="4">1-1/2"</option>
+                                <option value="5">2"</option>
+                                <option value="6">2-1/2"</option>
+                                <option value="7">3"</option>
+                                <option value="8">4"</option>
+                                <option value="9">5"</option>
+                                <option value="10">6"</option>
+                                <option value="11">8"</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- HW inputs Group -->
@@ -540,6 +558,24 @@
                             <label for="hwCFactor">C-Factor:</label>
                             <input type="number" id="hwCFactor" min="50" step="5" value="130" oninput="updateNodeParams()">
                         </div>
+                        <div class="input-row">
+                            <label for="hwMinSize">Min Size Override:</label>
+                            <select id="hwMinSize" onchange="updateNodeParams()">
+                                <option value="-1">None</option>
+                                <option value="0">1/2"</option>
+                                <option value="1">3/4"</option>
+                                <option value="2">1"</option>
+                                <option value="3">1-1/4"</option>
+                                <option value="4">1-1/2"</option>
+                                <option value="5">2"</option>
+                                <option value="6">2-1/2"</option>
+                                <option value="7">3"</option>
+                                <option value="8">4"</option>
+                                <option value="9">5"</option>
+                                <option value="10">6"</option>
+                                <option value="11">8"</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -554,6 +590,9 @@
                 </label>
                 <label class="toggle-item">
                     <input type="checkbox" id="showSupplyBoxes" checked onchange="recalculateAndRender()"> Show Supply Pipe Boxes
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="showOnlySizes" onchange="recalculateAndRender()"> Show Only Pipe Sizes (Big Font)
                 </label>
                 <label class="toggle-item">
                     <input type="checkbox" id="showHwrInfo" checked onchange="recalculateAndRender()"> Show Hot Water Return
@@ -724,8 +763,9 @@
             return 0;
         }
 
-        function wfuToGpm(wfu) {
-            const system = document.getElementById('systemType').value;
+        function wfuToGpm(wfu, isHotWater = false) {
+            // Hot water should always use flush tank curve
+            const system = isHotWater ? 'tank' : document.getElementById('systemType').value;
             if (system === 'tank') {
                 return interpolateWfu(wfu, tankWfuGpm);
             } else {
@@ -912,6 +952,7 @@
             document.getElementById('showNonHwrNodes').checked = true;
             document.getElementById('showSupplyPipes').checked = true;
             document.getElementById('showSupplyBoxes').checked = true;
+            document.getElementById('showOnlySizes').checked = false;
             document.getElementById('showHwrInfo').checked = true;
             document.getElementById('preventSizeDecrease').checked = true;
 
@@ -960,9 +1001,11 @@
                 cwMaxLoss: 10,
                 cwMaxVel: 5,
                 cwCFactor: 130,
+                minCwSizeIdx: -1, // default no minimum override
                 hwMaxLoss: 10,
                 hwMaxVel: 5,
                 hwCFactor: 130,
+                minHwSizeIdx: -1, // default no minimum override
                 cumulativeCwWfu: 0,
                 cumulativeHwWfu: 0,
                 cumulativeCwOverride: 0,
@@ -1014,10 +1057,12 @@
             document.getElementById('cwMaxLoss').value = node.cwMaxLoss;
             document.getElementById('cwMaxVel').value = node.cwMaxVel;
             document.getElementById('cwCFactor').value = node.cwCFactor;
+            document.getElementById('cwMinSize').value = node.minCwSizeIdx !== undefined ? node.minCwSizeIdx : -1;
 
             document.getElementById('hwMaxLoss').value = node.hwMaxLoss;
             document.getElementById('hwMaxVel').value = node.hwMaxVel;
             document.getElementById('hwCFactor').value = node.hwCFactor;
+            document.getElementById('hwMinSize').value = node.minHwSizeIdx !== undefined ? node.minHwSizeIdx : -1;
 
             document.getElementById('nodeLabelText').value = node.labelText || "";
 
@@ -1178,10 +1223,12 @@
                 node.cwMaxLoss = parseFloat(document.getElementById('cwMaxLoss').value) || 10;
                 node.cwMaxVel = parseFloat(document.getElementById('cwMaxVel').value) || 5;
                 node.cwCFactor = parseFloat(document.getElementById('cwCFactor').value) || 130;
+                node.minCwSizeIdx = parseInt(document.getElementById('cwMinSize').value);
 
                 node.hwMaxLoss = parseFloat(document.getElementById('hwMaxLoss').value) || 10;
                 node.hwMaxVel = parseFloat(document.getElementById('hwMaxVel').value) || 5;
                 node.hwCFactor = parseFloat(document.getElementById('hwCFactor').value) || 130;
+                node.minHwSizeIdx = parseInt(document.getElementById('hwMinSize').value);
 
                 node.labelText = document.getElementById('nodeLabelText').value;
 
@@ -1233,8 +1280,20 @@
                 if (node.parentId !== null) {
                     const cwRaw = calculateHydraulicPipeSize(node.computedCwGpm, node.cwMaxLoss, node.cwMaxVel, node.cwCFactor);
                     const hwRaw = calculateHydraulicPipeSize(node.computedHwGpm, node.hwMaxLoss, node.hwMaxVel, node.hwCFactor);
-                    node.cwFinalSizeIdx = cwRaw.index;
-                    node.hwFinalSizeIdx = hwRaw.index;
+                    
+                    let cwIdx = cwRaw.index;
+                    let hwIdx = hwRaw.index;
+
+                    // Apply node-specific minimum size override if defined
+                    if (node.minCwSizeIdx !== undefined && node.minCwSizeIdx > cwIdx) {
+                        cwIdx = node.minCwSizeIdx;
+                    }
+                    if (node.minHwSizeIdx !== undefined && node.minHwSizeIdx > hwIdx) {
+                        hwIdx = node.minHwSizeIdx;
+                    }
+
+                    node.cwFinalSizeIdx = cwIdx;
+                    node.hwFinalSizeIdx = hwIdx;
                 } else {
                     node.cwFinalSizeIdx = -1;
                     node.hwFinalSizeIdx = -1;
@@ -1279,8 +1338,9 @@
                 node.cumulativeHwOverride = demand.overrideHw;
                 
                 // Pure WFU conversion from the total table lookup
-                node.wfuCwGpm = wfuToGpm(demand.wfuCw);
-                node.wfuHwGpm = wfuToGpm(demand.wfuHw);
+                node.wfuCwGpm = wfuToGpm(demand.wfuCw, false);
+                // Hot water always uses the flush tank curve
+                node.wfuHwGpm = wfuToGpm(demand.wfuHw, true);
                 
                 // Final calculation adds the total lookup table GPM to total accumulated overrides cleanly
                 node.computedCwGpm = node.wfuCwGpm + demand.overrideCw;
@@ -1299,6 +1359,7 @@
             const showNonHwrNodes = document.getElementById('showNonHwrNodes').checked;
             const showSupplyPipes = document.getElementById('showSupplyPipes').checked;
             const showSupplyBoxes = document.getElementById('showSupplyBoxes').checked;
+            const showOnlySizes = document.getElementById('showOnlySizes').checked;
             const showHwrInfo = isHwrMode || document.getElementById('showHwrInfo').checked;
 
             if (showHwrInfo && hwrPath.length > 1) {
@@ -1404,20 +1465,54 @@
                     const isParentVisible = parentNode && (parentNode.parentId === null || showNonHwrNodes || hwrPath.indexOf(parentNode.id) !== -1);
 
                     if (parentNode && showSupplyPipes && isParentVisible) {
-                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                         const x1 = parentNode.x + 38;
                         const y1 = parentNode.y + 38;
                         const x2 = node.x + 38;
                         const y2 = node.y + 38;
 
-                        line.setAttribute('x1', x1);
-                        line.setAttribute('y1', y1);
-                        line.setAttribute('x2', x2);
-                        line.setAttribute('y2', y2);
-                        line.setAttribute('stroke', '#60a5fa'); 
-                        line.setAttribute('stroke-width', '4');
-                        line.setAttribute('marker-end', 'url(#arrow-cw)');
-                        svgLayer.appendChild(line);
+                        const dx = x2 - x1;
+                        const dy = y2 - y1;
+                        const L = Math.sqrt(dx * dx + dy * dy);
+
+                        const hasHw = node.computedHwGpm > 0;
+
+                        if (hasHw && L > 0) {
+                            // Draw parallel offset lines so both Cold and Hot water lines are visible
+                            const nx = -dy / L;
+                            const ny = dx / L;
+                            const offset = 6; 
+
+                            const lineCw = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            lineCw.setAttribute('x1', x1 + nx * -offset);
+                            lineCw.setAttribute('y1', y1 + ny * -offset);
+                            lineCw.setAttribute('x2', x2 + nx * -offset);
+                            lineCw.setAttribute('y2', y2 + ny * -offset);
+                            lineCw.setAttribute('stroke', '#60a5fa'); 
+                            lineCw.setAttribute('stroke-width', '3');
+                            lineCw.setAttribute('marker-end', 'url(#arrow-cw)');
+                            svgLayer.appendChild(lineCw);
+
+                            const lineHw = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            lineHw.setAttribute('x1', x1 + nx * offset);
+                            lineHw.setAttribute('y1', y1 + ny * offset);
+                            lineHw.setAttribute('x2', x2 + nx * offset);
+                            lineHw.setAttribute('y2', y2 + ny * offset);
+                            lineHw.setAttribute('stroke', '#f87171'); 
+                            lineHw.setAttribute('stroke-width', '3');
+                            lineHw.setAttribute('marker-end', 'url(#arrow-hw)');
+                            svgLayer.appendChild(lineHw);
+                        } else {
+                            // CW only line
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', x1);
+                            line.setAttribute('y1', y1);
+                            line.setAttribute('x2', x2);
+                            line.setAttribute('y2', y2);
+                            line.setAttribute('stroke', '#60a5fa'); 
+                            line.setAttribute('stroke-width', '4');
+                            line.setAttribute('marker-end', 'url(#arrow-cw)');
+                            svgLayer.appendChild(line);
+                        }
 
                         if (showSupplyBoxes) {
                             const midX = (x1 + x2) / 2;
@@ -1466,20 +1561,27 @@
                             const sizeWarningCw = (cwSizingIdx > localCwRaw.index && cwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
                             const sizeWarningHw = (hwSizingIdx > localHwRaw.index && hwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
 
-                            const labelHtml = `
-                                <div class="pipe-label">
-                                    <div style="margin-bottom: 2px;">${cwDetail}</div>
-                                    <div style="margin-bottom: 4px;">${hwDetail}</div>
-                                    <span class="cw">CW: ${cwSizingText}${sizeWarningCw}</span> | <span class="hw">HW: ${hwSizingText}${sizeWarningHw}</span>
-                                    <div class="hydraulics-tag">
-                                        CW: ${cwHydraulics.velocity.toFixed(1)}fps, ${cwHydraulics.headLoss.toFixed(1)}ft/100'<br>
-                                        HW: ${hwHydraulics.velocity.toFixed(1)}fps, ${hwHydraulics.headLoss.toFixed(1)}ft/100'
+                            let labelHtml = '';
+                            if (showOnlySizes) {
+                                labelHtml = `
+                                    <div class="pipe-label" style="font-size: 16px; padding: 10px 16px; font-weight: bold; min-width: 110px;">
+                                        <span class="cw">${cwSizingText}</span> | <span class="hw">${hwSizingText}</span>
                                     </div>
-                                </div>
-                            `;
+                                `;
+                            } else {
+                                labelHtml = `
+                                    <div class="pipe-label">
+                                        <div style="margin-bottom: 2px;">${cwDetail}</div>
+                                        <div style="margin-bottom: 4px;">${hwDetail}</div>
+                                        <span class="cw">CW: ${cwSizingText}${sizeWarningCw}</span> | <span class="hw">HW: ${hwSizingText}${sizeWarningHw}</span>
+                                        <div class="hydraulics-tag">
+                                            CW: ${cwHydraulics.velocity.toFixed(1)}fps, ${cwHydraulics.headLoss.toFixed(1)}ft/100'<br>
+                                            HW: ${hwHydraulics.velocity.toFixed(1)}fps, ${hwHydraulics.headLoss.toFixed(1)}ft/100'
+                                        </div>
+                                    </div>
+                                `;
+                            }
 
-                            const dx = x2 - x1;
-                            const dy = y2 - y1;
                             const isHorizontal = Math.abs(dx) > Math.abs(dy);
 
                             let arrowHtml = '';
