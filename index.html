@@ -188,7 +188,6 @@
             width: 80px;
         }
 
-        /* Remove arrows/spinners from number inputs globally */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
@@ -207,7 +206,6 @@
             user-select: none;
         }
 
-        /* View toggles box */
         .view-toggles {
             display: flex;
             flex-wrap: wrap;
@@ -227,7 +225,6 @@
             cursor: pointer;
         }
 
-        /* Designer Workspace */
         .workspace {
             position: relative;
             height: 650px;
@@ -241,7 +238,6 @@
             cursor: grabbing;
         }
 
-        /* Panning/Zooming Container */
         .pan-zoom-container {
             position: absolute;
             width: 5000px;
@@ -262,7 +258,6 @@
             left: 0;
         }
 
-        /* SVG Overlays for pipes */
         svg.pipe-layer {
             position: absolute;
             top: 0;
@@ -273,7 +268,6 @@
             z-index: 1;
         }
 
-        /* Node Styling */
         .node {
             box-sizing: border-box;
             position: absolute;
@@ -317,7 +311,6 @@
             border-color: #9ca3af !important;
         }
 
-        /* Floating Node Controls */
         .node-builder-arrows {
             position: absolute;
             display: none;
@@ -347,7 +340,6 @@
             background: #059669;
         }
 
-        /* Legend & Info panel */
         .legend {
             padding: 15px 20px;
             background: rgba(0, 0, 0, 0.3);
@@ -376,7 +368,6 @@
             border-radius: 50%;
         }
 
-        /* Pipe flow labels */
         .pipe-label-wrapper {
             position: absolute;
             transform: translate(-50%, -50%);
@@ -407,7 +398,6 @@
         .pipe-label .override-tag { color: #f59e0b; font-size: 9px; font-weight: bold;}
         .pipe-label .hydraulics-tag { color: #10b981; font-size: 9px; margin-top: 2px;}
 
-        /* Flow directional visual indicators outside the label card */
         .flow-indicator {
             position: absolute;
             color: #10b981;
@@ -418,7 +408,6 @@
             z-index: 41;
         }
 
-        /* Toast Alert style */
         .mode-banner {
             position: absolute;
             top: 15px;
@@ -436,7 +425,6 @@
             display: none;
         }
 
-        /* HWR Node Overlay label */
         .hwr-node-label {
             position: absolute;
             left: 80px;
@@ -459,7 +447,6 @@
             font-size: 11px;
         }
 
-        /* Zoom control badge */
         .zoom-badge {
             position: absolute;
             bottom: 15px;
@@ -574,7 +561,7 @@
                 <label class="toggle-item" style="color: #60a5fa; font-weight: bold;">
                     <input type="checkbox" id="preventSizeDecrease" checked onchange="recalculateAndRender()"> Pipe Size Cannot Decrease
                 </label>
-                <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Drag canvas to Pan • Scroll wheel to Zoom • Press Delete key to delete selection</span>
+                <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Drag canvas to Pan • Scroll wheel to Zoom • Press Delete key to delete selection • Press "o" to convert to org node • Press "p" to convert from org node • Arrow keys add nodes from selected node</span>
             </div>
         </div>
 
@@ -585,7 +572,6 @@
             
             <div class="pan-zoom-container" id="panZoomContainer">
                 <div class="canvas" id="canvas">
-                    <!-- SVG layer for pipelines -->
                     <svg class="pipe-layer" id="svgLayer">
                         <defs>
                             <marker id="arrow-cw" viewBox="0 0 10 10" refX="41" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -597,7 +583,6 @@
                         </defs>
                     </svg>
 
-                    <!-- Floating controls for selected node -->
                     <div class="node-builder-arrows" id="arrowControls">
                         <button class="arrow-btn" style="grid-column: 2; grid-row: 1;" onclick="addNode('up')">↑</button>
                         <button class="arrow-btn" style="grid-column: 1; grid-row: 2;" onclick="addNode('left')">←</button>
@@ -605,10 +590,7 @@
                         <button class="arrow-btn" style="grid-column: 2; grid-row: 3;" onclick="addNode('down')">↓</button>
                     </div>
 
-                    <!-- HTML Pipe text labels -->
                     <div id="pipeLabelsContainer"></div>
-
-                    <!-- Nodes -->
                     <div id="nodesContainer"></div>
                 </div>
             </div>
@@ -640,7 +622,6 @@
     </div>
 
     <script>
-        // Type L Copper inside diameters (inches) from 1/2" to 8"
         const copperTypeL = [
             { nominal: '1/2"', id: 0.545 },
             { nominal: '3/4"', id: 0.785 },
@@ -656,13 +637,11 @@
             { nominal: '8"', id: 7.725 }
         ];
 
-        // Map nominal text to index for easy comparison
         const copperSizeMap = {};
         copperTypeL.forEach((size, idx) => {
             copperSizeMap[size.nominal] = idx;
         });
 
-        // HWR loop custom lookup table (Pruned to size limit, max sizes above 3" removed)
         const hwrSizingTable = [
             { maxGpm: 3.5, size: '1/2"' },
             { maxGpm: 7.5, size: '3/4"' },
@@ -674,7 +653,6 @@
             { maxGpm: 106.0, size: '3"' }
         ];
 
-        // Flush Tank & Flush Valve tables
         const tankWfuGpm = [
             {wfu: 0, gpm: 0}, {wfu: 1, gpm: 3}, {wfu: 3, gpm: 5}, {wfu: 4, gpm: 8}, {wfu: 5, gpm: 9.4}, 
             {wfu: 6, gpm: 9.4}, {wfu: 7, gpm: 11.8}, {wfu: 8, gpm: 12.8}, {wfu: 9, gpm: 13.7}, {wfu: 10, gpm: 14.6}, 
@@ -730,7 +708,6 @@
             {wfu: 5380, gpm: 700}, {wfu: 6280, gpm: 800}, {wfu: 7280, gpm: 900}, {wfu: 8300, gpm: 1000}
         ];
 
-        // Linear interpolation helper
         function interpolateWfu(wfu, lookupTable) {
             if (wfu <= 0) return 0;
             if (wfu <= lookupTable[0].wfu) return lookupTable[0].gpm;
@@ -756,7 +733,6 @@
             }
         }
 
-        // Hazen-Williams Head Loss and Velocity Pipe Sizing calculation
         function calculateHydraulicPipeSize(gpm, maxLoss, maxVel, cFactor) {
             if (gpm <= 0) return { size: 'N/A', velocity: 0, headLoss: 0, index: -1 };
             
@@ -764,10 +740,7 @@
                 const pipe = copperTypeL[i];
                 const d = pipe.id; 
                 
-                // Velocity in feet per second (fps)
                 const v = 0.4085 * (gpm / (d * d));
-                
-                // Friction loss per 100 feet (ft of water / 100')
                 const h100 = 0.2083 * Math.pow(100 / cFactor, 1.85) * (Math.pow(gpm, 1.85) / Math.pow(d, 4.8655));
 
                 if (v <= maxVel && h100 <= maxLoss) {
@@ -785,20 +758,16 @@
             return 'N/A';
         }
 
-        // State variables
         let nodes = [];
         let selectedNodeId = null;
         let nodeCounter = 0;
         
-        // Asymmetrical Grid Spacing Config
         const gridSpacingY = 160; 
-        const gridSpacingX = 240; // 1.5x wider horizontal grid spacing
+        const gridSpacingX = 240; 
 
-        // HWR System state
         let isHwrMode = false;
         let hwrPath = []; 
 
-        // Pan and Zoom Workspace state
         let panX = -1000;
         let panY = -1200;
         let scale = 0.75;
@@ -817,7 +786,6 @@
         const modeBanner = document.getElementById('modeBanner');
         const zoomBadge = document.getElementById('zoomBadge');
 
-        // Setup Zoom and Pan
         workspace.addEventListener('mousedown', (e) => {
             if (e.target === workspace || e.target === panZoomContainer || e.target === canvas || e.target === svgLayer) {
                 isPanning = true;
@@ -861,7 +829,6 @@
             updateWorkspaceTransform();
         });
 
-        // Keybindings
         document.addEventListener('keydown', (e) => {
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') {
                 return;
@@ -998,11 +965,12 @@
                 hwCFactor: 130,
                 cumulativeCwWfu: 0,
                 cumulativeHwWfu: 0,
+                cumulativeCwOverride: 0,
+                cumulativeHwOverride: 0,
+                wfuCwGpm: 0,
+                wfuHwGpm: 0,
                 computedCwGpm: 0,
                 computedHwGpm: 0,
-                cwOverridden: false,
-                hwOverridden: false,
-                // Calculated final sized variables
                 cwFinalSizeIdx: -1,
                 hwFinalSizeIdx: -1
             };
@@ -1227,55 +1195,40 @@
             }
         }
 
-        // Restructured Demand Gathering
+        /* 
+           Accumulates structural elements recursively. 
+           Gathers total structural pure WFU and total manual GPM overrides downstream separately.
+        */
         function getSubtreeDemand(nodeId) {
             const node = nodes.find(n => n.id === nodeId);
-            if (!node) return { wfuCw: 0, wfuHw: 0, gpmCw: 0, gpmHw: 0, cwOverridden: false, hwOverridden: false };
+            if (!node) return { wfuCw: 0, wfuHw: 0, overrideCw: 0, overrideHw: 0 };
 
-            // Start locally: Convert only local WFUs to GPM
-            const localWfuCw = node.isOrg ? 0 : node.cwWfu;
-            const localWfuHw = node.isOrg ? 0 : node.hwWfu;
-
-            // Resolve local GPM base values (Apply local override if active, else standard WFU to GPM)
-            const cwOverridden = !node.isOrg && node.cwGpmOverride > 0;
-            const localGpmCw = cwOverridden ? node.cwGpmOverride : wfuToGpm(localWfuCw);
-
-            const hwOverridden = !node.isOrg && node.hwGpmOverride > 0;
-            const localGpmHw = hwOverridden ? node.hwGpmOverride : wfuToGpm(localWfuHw);
-
-            // Accumulate GPM recursively from downstream branches
-            let totalGpmCw = localGpmCw;
-            let totalGpmHw = localGpmHw;
-            let totalWfuCw = localWfuCw;
-            let totalWfuHw = localWfuHw;
+            let totalWfuCw = node.isOrg ? 0 : node.cwWfu;
+            let totalWfuHw = node.isOrg ? 0 : node.hwWfu;
+            let totalOverrideCw = (!node.isOrg && node.cwGpmOverride > 0) ? node.cwGpmOverride : 0;
+            let totalOverrideHw = (!node.isOrg && node.hwGpmOverride > 0) ? node.hwGpmOverride : 0;
 
             const children = nodes.filter(n => n.parentId === nodeId);
             children.forEach(child => {
                 const childDemand = getSubtreeDemand(child.id);
-                // Child's calculated/propagated GPM flows directly into this node's total
-                totalGpmCw += childDemand.gpmCw;
-                totalGpmHw += childDemand.gpmHw;
-                // Track cumulative pure WFUs for readout boxes (ignores manual overrides)
                 totalWfuCw += childDemand.wfuCw;
                 totalWfuHw += childDemand.wfuHw;
+                totalOverrideCw += childDemand.overrideCw;
+                totalOverrideHw += childDemand.overrideHw;
             });
 
             return {
                 wfuCw: totalWfuCw,
                 wfuHw: totalWfuHw,
-                gpmCw: totalGpmCw,
-                gpmHw: totalGpmHw,
-                cwOverridden: cwOverridden,
-                hwOverridden: hwOverridden
+                overrideCw: totalOverrideCw,
+                overrideHw: totalOverrideHw
             };
         }
 
-        // Recursive sizing lookup that prevents size decreases upstream (towards root/source)
         function propagateSizingRestriction() {
             const rootNode = nodes.find(n => n.parentId === null);
             if (!rootNode) return;
 
-            // Step 1: Calculate raw local sizes for all nodes
             nodes.forEach(node => {
                 if (node.parentId !== null) {
                     const cwRaw = calculateHydraulicPipeSize(node.computedCwGpm, node.cwMaxLoss, node.cwMaxVel, node.cwCFactor);
@@ -1288,10 +1241,8 @@
                 }
             });
 
-            // If the prevent decrease toggle is active, propagate downstream max sizes back upstream
             const preventDecrease = document.getElementById('preventSizeDecrease').checked;
             if (preventDecrease) {
-                // Post-order dynamic programming to pull up maximum sizes of downstream branches
                 function computeMaxSizesForSubtree(nodeId) {
                     const node = nodes.find(n => n.id === nodeId);
                     if (!node) return { maxCwIdx: -1, maxHwIdx: -1 };
@@ -1307,7 +1258,6 @@
                         if (childMax.maxHwIdx > maxHwIdx) maxHwIdx = childMax.maxHwIdx;
                     });
 
-                    // Force current segment (going upstream toward parent) to be at least as large as any child segment draining into it
                     if (node.parentId !== null) {
                         node.cwFinalSizeIdx = maxCwIdx;
                         node.hwFinalSizeIdx = maxHwIdx;
@@ -1323,14 +1273,18 @@
         function recalculateAndRender() {
             nodes.forEach(node => {
                 const demand = getSubtreeDemand(node.id);
-                // Store structural values cleanly
                 node.cumulativeCwWfu = demand.wfuCw;
                 node.cumulativeHwWfu = demand.wfuHw;
-                node.computedCwGpm = demand.gpmCw;
-                node.computedHwGpm = demand.gpmHw;
+                node.cumulativeCwOverride = demand.overrideCw;
+                node.cumulativeHwOverride = demand.overrideHw;
                 
-                node.cwOverridden = demand.cwOverridden;
-                node.hwOverridden = demand.hwOverridden;
+                // Pure WFU conversion from the total table lookup
+                node.wfuCwGpm = wfuToGpm(demand.wfuCw);
+                node.wfuHwGpm = wfuToGpm(demand.wfuHw);
+                
+                // Final calculation adds the total lookup table GPM to total accumulated overrides cleanly
+                node.computedCwGpm = node.wfuCwGpm + demand.overrideCw;
+                node.computedHwGpm = node.wfuHwGpm + demand.overrideHw;
             });
 
             propagateSizingRestriction();
@@ -1477,18 +1431,15 @@
                             const cwGpmVal = node.computedCwGpm;
                             const hwGpmVal = node.computedHwGpm;
 
-                            // Resolve the finalized sizes mapping to copper types indices
                             const cwSizingIdx = node.cwFinalSizeIdx;
                             const hwSizingIdx = node.hwFinalSizeIdx;
 
                             const cwSizingText = (cwSizingIdx >= 0 && cwSizingIdx < copperTypeL.length) ? copperTypeL[cwSizingIdx].nominal : 'N/A';
                             const hwSizingText = (hwSizingIdx >= 0 && hwSizingIdx < copperTypeL.length) ? copperTypeL[hwSizingIdx].nominal : 'N/A';
 
-                            // Local calculation values strictly for readout metrics (velocities and friction head losses)
                             const localCwRaw = calculateHydraulicPipeSize(cwGpmVal, node.cwMaxLoss, node.cwMaxVel, node.cwCFactor);
                             const localHwRaw = calculateHydraulicPipeSize(hwGpmVal, node.hwMaxLoss, node.hwMaxVel, node.hwCFactor);
 
-                            // Dynamically recalculate local velocities and head losses based on the potentially forced oversized diameter
                             function getEnforcedHydraulics(gpm, finalIdx, cFactor) {
                                 if (gpm <= 0 || finalIdx < 0 || finalIdx >= copperTypeL.length) return { velocity: 0, headLoss: 0 };
                                 const actualIdx = Math.min(finalIdx, copperTypeL.length - 1);
@@ -1501,13 +1452,16 @@
                             const cwHydraulics = getEnforcedHydraulics(cwGpmVal, cwSizingIdx, node.cwCFactor);
                             const hwHydraulics = getEnforcedHydraulics(hwGpmVal, hwSizingIdx, node.hwCFactor);
 
-                            const cwDetail = node.cwOverridden 
-                                ? `<span class="override-tag">+ ${node.cwGpmOverride.toFixed(1)} GPM</span>` 
-                                : `<span class="flow-demand">${node.cumulativeCwWfu.toFixed(1)} WFU (${cwGpmVal.toFixed(1)} GPM)</span>`;
-                            
-                            const hwDetail = node.hwOverridden 
-                                ? `<span class="override-tag">+ ${node.hwGpmOverride.toFixed(1)} GPM</span>` 
-                                : `<span class="flow-demand">${node.cumulativeHwWfu.toFixed(1)} WFU (${hwGpmVal.toFixed(1)} GPM)</span>`;
+                            // Construct split detail readouts to isolate WFU lookups vs manual GPM overrides
+                            let cwDetail = `<span class="flow-demand">${node.cumulativeCwWfu.toFixed(1)} WFU (${node.wfuCwGpm.toFixed(1)} GPM)</span>`;
+                            if (node.cumulativeCwOverride > 0) {
+                                cwDetail += ` <span class="override-tag">+ ${node.cumulativeCwOverride.toFixed(1)} GPM</span>`;
+                            }
+
+                            let hwDetail = `<span class="flow-demand">${node.cumulativeHwWfu.toFixed(1)} WFU (${node.wfuHwGpm.toFixed(1)} GPM)</span>`;
+                            if (node.cumulativeHwOverride > 0) {
+                                hwDetail += ` <span class="override-tag">+ ${node.cumulativeHwOverride.toFixed(1)} GPM</span>`;
+                            }
 
                             const sizeWarningCw = (cwSizingIdx > localCwRaw.index && cwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
                             const sizeWarningHw = (hwSizingIdx > localHwRaw.index && hwSizingText !== 'N/A') ? ' <span style="color:#10b981;">(+)</span>' : '';
